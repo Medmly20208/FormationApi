@@ -1,12 +1,30 @@
-const consultant = require("../models/consultant.model");
+const trainingOfficeModel = require("../models/trainingOffice.model");
+const User = require("../models/user.model");
 
-exports.updateConsultant = (req, res) => {
-  consultant
+exports.CreateTrainingOffice = (req, res) => {
+  trainingOfficeModel
+    .create({ ...req.body })
+    .then((trainingoffice) => {
+      res.status(200).json({
+        status: "success",
+        data: trainingoffice,
+      });
+    })
+    .catch((err) => {
+      res.status(400).json({
+        status: "failed",
+        message: err.message,
+      });
+    });
+};
+
+exports.updateTrainingOffice = (req, res) => {
+  trainingOfficeModel
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
-    .then((consultant) => {
+    .then((trainingOffice) => {
       res.status(200).json({
         status: "success",
-        data: consultant,
+        data: trainingOffice,
       });
     })
     .catch((err) => {
@@ -17,13 +35,13 @@ exports.updateConsultant = (req, res) => {
     });
 };
 
-exports.getAllConsultants = (req, res) => {
-  consultant
+exports.getAllTrainingOffices = (req, res) => {
+  trainingOfficeModel
     .find()
-    .then((consultants) => {
+    .then((trainingOffices) => {
       res.status(200).json({
         status: "success",
-        data: consultants,
+        data: trainingOffices,
       });
     })
     .catch((err) => {
@@ -33,13 +51,13 @@ exports.getAllConsultants = (req, res) => {
     });
 };
 
-exports.getConsultantById = (req, res) => {
-  consultant
+exports.getTrainingOfficeById = (req, res) => {
+  trainingOfficeModel
     .findById(req.params.id)
-    .then((consultant) => {
+    .then((trainingOffice) => {
       res.status(200).json({
         status: "success",
-        data: consultant,
+        data: trainingOffice,
       });
     })
     .catch((err) => {
@@ -50,8 +68,8 @@ exports.getConsultantById = (req, res) => {
     });
 };
 
-exports.deleteConsultantById = (req, res) => {
-  consultant
+exports.deleteTrainingOfficeById = (req, res) => {
+  trainingOfficeModel
     .findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(200).json({
@@ -68,12 +86,12 @@ exports.deleteConsultantById = (req, res) => {
 };
 
 exports.getAllReviews = (req, res) => {
-  consultant
+  trainingOfficeModel
     .findById(req.params.id)
-    .then((consultant) => {
+    .then((trainingOffice) => {
       res.status(200).json({
         status: "success",
-        data: consultant === null ? [] : consultant.reviews,
+        data: trainingOffice === null ? [] : trainingOffice.reviews,
       });
     })
     .catch((err) => {
@@ -85,16 +103,16 @@ exports.getAllReviews = (req, res) => {
 };
 
 exports.postReview = (req, res) => {
-  consultant
+  trainingOfficeModel
     .findByIdAndUpdate(
       req.params.id,
       { $push: { reviews: req.body.review } },
       { new: true }
     )
-    .then((consultant) => {
+    .then((trainingOffice) => {
       res.status(200).json({
         status: "success",
-        data: consultant,
+        data: trainingOffice,
       });
     })
     .catch((err) => {

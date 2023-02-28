@@ -8,12 +8,12 @@ const Reviews = mongoose.Schema({
   rating: Number,
 });
 
-const consultant = mongoose.Schema({
+const trainingOffice = mongoose.Schema({
   email: {
     type: String,
     required: true,
   },
-  consultantId: {
+  trainingOfficeId: {
     type: String,
     required: true,
   },
@@ -21,15 +21,8 @@ const consultant = mongoose.Schema({
     type: String,
     trim: true,
   },
-  city: {
-    type: String,
-    trim: true,
-  },
-  cv: {
-    type: String,
-    trim: true,
-  },
-  personnelImg: {
+
+  img: {
     type: String,
     trim: true,
   },
@@ -41,16 +34,14 @@ const consultant = mongoose.Schema({
     type: String,
     trim: true,
   },
-  aboutMe: {
+  aboutUs: {
     type: String,
     trim: true,
   },
-  skills: {
-    type: Array,
-  },
+
   reviews: [Reviews],
 });
 
-const consultantModal = mongoose.model("consultant", consultant);
+const trainingOfficeModal = mongoose.model("training_office", trainingOffice);
 
-module.exports = consultantModal;
+module.exports = trainingOfficeModal;
