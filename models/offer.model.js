@@ -1,11 +1,5 @@
 const mongoose = require("mongoose");
 
-const Applications = mongoose.Schema({
-  applicantrId: String,
-  applicantType: String,
-  comment: String,
-});
-
 const offers = mongoose.Schema({
   employerId: {
     type: String,
@@ -16,10 +10,15 @@ const offers = mongoose.Schema({
     trim: true,
     default: "",
   },
-
+  employerField: {
+    type: String,
+    trim: true,
+    default: "",
+  },
   title: {
     type: String,
     trim: true,
+    required: true,
     default: "",
   },
   city: {
@@ -27,10 +26,10 @@ const offers = mongoose.Schema({
     trim: true,
     default: "",
   },
-
-  applications: {
-    type: [Applications],
-    default: [],
+  description: {
+    type: String,
+    trim: true,
+    required: true,
   },
 });
 
