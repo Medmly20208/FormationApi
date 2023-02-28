@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-const User = mongoose.Schema({
+const user = mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -19,7 +19,7 @@ const User = mongoose.Schema({
   },
 });
 
-User.statics.login = async function (email, password) {
+user.statics.login = async function (email, password) {
   const user = await this.findOne({ email });
 
   if (!user) {
@@ -35,7 +35,7 @@ User.statics.login = async function (email, password) {
   return user;
 };
 
-User.statics.signup = async function (email, password, type) {
+user.statics.signup = async function (email, password, type) {
   const user = await this.findOne({ email });
 
   if (user) {
@@ -50,6 +50,6 @@ User.statics.signup = async function (email, password, type) {
   return newUser;
 };
 
-const UserModel = mongoose.model("users", User);
+const UserModel = mongoose.model("users", user);
 
 module.exports = UserModel;
