@@ -3,7 +3,6 @@ const trainingOfficeControllers = require("../controllers/trainingOfficeControll
 const Router = express.Router();
 
 // public route methods
-Router.post("/", trainingOfficeControllers.CreateTrainingOffice);
 Router.get("/", trainingOfficeControllers.getAllTrainingOffices);
 Router.get("/:id", trainingOfficeControllers.getTrainingOfficeById);
 

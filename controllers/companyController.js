@@ -1,12 +1,12 @@
-const trainingOfficeModel = require("../models/trainingOffice.model");
+const companyModel = require("../models/company.model");
 
-exports.updateTrainingOffice = (req, res) => {
-  trainingOfficeModel
+exports.updateCompany = (req, res) => {
+  companyModel
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
-    .then((trainingOffice) => {
+    .then((company) => {
       res.status(200).json({
         status: "success",
-        data: trainingOffice,
+        data: company,
       });
     })
     .catch((err) => {
@@ -17,29 +17,13 @@ exports.updateTrainingOffice = (req, res) => {
     });
 };
 
-exports.getAllTrainingOffices = (req, res) => {
-  trainingOfficeModel
+exports.getAllCompanies = (req, res) => {
+  companyModel
     .find()
-    .then((trainingOffices) => {
+    .then((companies) => {
       res.status(200).json({
         status: "success",
-        data: trainingOffices,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-      });
-    });
-};
-
-exports.getTrainingOfficeById = (req, res) => {
-  trainingOfficeModel
-    .findById(req.params.id)
-    .then((trainingOffice) => {
-      res.status(200).json({
-        status: "success",
-        data: trainingOffice,
+        data: companies,
       });
     })
     .catch((err) => {
@@ -50,8 +34,25 @@ exports.getTrainingOfficeById = (req, res) => {
     });
 };
 
-exports.deleteTrainingOfficeById = (req, res) => {
-  trainingOfficeModel
+exports.getCompanyById = (req, res) => {
+  companyModel
+    .findById(req.params.id)
+    .then((company) => {
+      res.status(200).json({
+        status: "success",
+        data: company,
+      });
+    })
+    .catch((err) => {
+      res.status(400).json({
+        status: "failed",
+        message: err.message,
+      });
+    });
+};
+
+exports.deleteCompanyById = (req, res) => {
+  companyModel
     .findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(200).json({
@@ -68,12 +69,12 @@ exports.deleteTrainingOfficeById = (req, res) => {
 };
 
 exports.getAllReviews = (req, res) => {
-  trainingOfficeModel
+  companyModel
     .findById(req.params.id)
-    .then((trainingOffice) => {
+    .then((company) => {
       res.status(200).json({
         status: "success",
-        data: trainingOffice === null ? [] : trainingOffice.reviews,
+        data: company === null ? [] : company.reviews,
       });
     })
     .catch((err) => {
@@ -85,16 +86,16 @@ exports.getAllReviews = (req, res) => {
 };
 
 exports.postReview = (req, res) => {
-  trainingOfficeModel
+  companyModel
     .findByIdAndUpdate(
       req.params.id,
       { $push: { reviews: req.body.review } },
       { new: true }
     )
-    .then((trainingOffice) => {
+    .then((company) => {
       res.status(200).json({
         status: "success",
-        data: trainingOffice,
+        data: company,
       });
     })
     .catch((err) => {

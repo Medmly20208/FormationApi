@@ -1,5 +1,22 @@
 const consultant = require("../models/consultant.model");
 
+exports.CreateConsultant = (req, res) => {
+  consultant
+    .create({ ...req.body })
+    .then((consultant) => {
+      res.status(200).json({
+        status: "success",
+        data: consultant,
+      });
+    })
+    .catch((err) => {
+      res.status(400).json({
+        status: "failed",
+        message: err.message,
+      });
+    });
+};
+
 exports.updateConsultant = (req, res) => {
   consultant
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })

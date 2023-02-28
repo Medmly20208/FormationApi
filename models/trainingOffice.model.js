@@ -20,26 +20,32 @@ const trainingOffice = mongoose.Schema({
   name: {
     type: String,
     trim: true,
+    default: "",
   },
 
   img: {
     type: String,
     trim: true,
+    default: "",
   },
   phoneNumber: {
     type: String,
     trim: true,
-  },
-  field: {
-    type: String,
-    trim: true,
+    default: "",
   },
   aboutUs: {
     type: String,
     trim: true,
+    default: "",
   },
-
-  reviews: [Reviews],
+  rating: {
+    type: Number,
+    default: 0,
+  },
+  reviews: {
+    type: [Reviews],
+    default: [],
+  },
 });
 
 const trainingOfficeModal = mongoose.model("training_office", trainingOffice);

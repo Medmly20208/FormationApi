@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const Consultant = require("../models/consultant.model");
 const trainingOffice = require("../models/trainingOffice.model");
+const company = require("../models/company.model");
 const jwt = require("jsonwebtoken");
 const isEmailValid = require("../helpers/isEmailValid");
 const isPasswordValid = require("../helpers/isPasswordValid");
@@ -23,6 +24,17 @@ const CreateTypeUser = async (id, email, type) => {
     return trainingOffice
       .create({
         trainingOfficeId: id,
+        email,
+      })
+      .catch((error) => {
+        throw Error(error.message);
+      });
+  }
+
+  if (type === "company") {
+    return company
+      .create({
+        companyId: id,
         email,
       })
       .catch((error) => {

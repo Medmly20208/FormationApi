@@ -20,35 +20,47 @@ const consultant = mongoose.Schema({
   name: {
     type: String,
     trim: true,
+    default: "",
   },
   city: {
     type: String,
     trim: true,
+    deafult: "",
   },
   cv: {
     type: String,
     trim: true,
+    default: "",
   },
   personnelImg: {
     type: String,
     trim: true,
+    default: "",
   },
   phoneNumber: {
     type: String,
     trim: true,
+    default: "",
   },
   field: {
     type: String,
     trim: true,
+    default: "",
   },
   aboutMe: {
     type: String,
     trim: true,
+    default: "",
   },
   skills: {
     type: Array,
+    default: [],
   },
-  reviews: [Reviews],
+  rating: { type: Number, default: 0 },
+  reviews: {
+    type: [Reviews],
+    deafult: [],
+  },
 });
 
 const consultantModal = mongoose.model("consultant", consultant);
