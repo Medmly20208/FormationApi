@@ -22,7 +22,11 @@ const trainingOffice = mongoose.Schema({
     trim: true,
     default: "",
   },
-
+  city: {
+    type: String,
+    trim: true,
+    default: "",
+  },
   img: {
     type: String,
     trim: true,
@@ -37,6 +41,15 @@ const trainingOffice = mongoose.Schema({
     type: String,
     trim: true,
     default: "",
+  },
+
+  numberOfReviews: {
+    type: Number,
+    default: 0,
+  },
+  totalRating: {
+    type: Number,
+    default: 0,
   },
   rating: {
     type: Number,

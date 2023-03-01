@@ -35,8 +35,20 @@ exports.updateConsultant = (req, res) => {
 };
 
 exports.getAllConsultants = (req, res) => {
+  let queryObj = { ...req.query };
+
+  let queryString = JSON.stringify(queryObj);
+
+  queryString = queryString.replace(
+    /\b(gte|gt|lt|lte)\b/g,
+    (match) => `$${match}`
+  );
+
+  queryObj = JSON.parse(queryString);
+  const regex = new RegExp(req.query.name, "i"); // i for case insensitive
+  queryObj["name"] = { $regex: regex };
   consultant
-    .find()
+    .find(queryObj)
     .then((consultants) => {
       res.status(200).json({
         status: "success",
@@ -101,23 +113,28 @@ exports.getAllReviews = (req, res) => {
     });
 };
 
-exports.postReview = (req, res) => {
-  consultant
-    .findByIdAndUpdate(
-      req.params.id,
-      { $push: { reviews: req.body.review } },
-      { new: true }
-    )
-    .then((consultant) => {
-      res.status(200).json({
-        status: "success",
-        data: consultant,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
+exports.postReview = async (req, res) => {
+  try {
+    const consultantUser = await consultant.findById(req.params.id);
+
+    consultantUser.reviews.push(req.body.review);
+    consultantUser.numberOfReviews = consultantUser.numberOfReviews + 1;
+    consultantUser.totalRating =
+      consultantUser.totalRating + req.body.review.rating;
+
+    consultantUser.rating =
+      consultantUser.totalRating / consultantUser.numberOfReviews;
+
+    consultantUser.save();
+
+    res.status(200).json({
+      status: "success",
+      data: consultantUser,
     });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
 };

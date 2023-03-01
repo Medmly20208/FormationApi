@@ -1,8 +1,23 @@
 const offers = require("../models/offer.model");
 
 exports.getAllOffers = (req, res) => {
+  let queryObj = { ...req.query };
+
+  let queryString = JSON.stringify(queryObj);
+
+  queryString = queryString.replace(
+    /\b(gte|gt|lt|lte)\b/g,
+    (match) => `$${match}`
+  );
+
+  queryObj = JSON.parse(queryString);
+  const employerNameregex = new RegExp(req.query.employerName, "i"); // i for case insensitive
+  const titleRegex = new RegExp(req.query.title, "i"); // i for case insensitive
+  queryObj["employerName"] = { $regex: employerNameregex };
+  queryObj["title"] = { $regex: titleRegex };
+
   offers
-    .find()
+    .find(queryObj)
     .then((offers) => {
       res.status(200).json({
         status: "success",

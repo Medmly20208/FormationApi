@@ -56,6 +56,18 @@ const consultant = mongoose.Schema({
     type: Array,
     default: [],
   },
+  totalRating: {
+    type: Number,
+    default: 0,
+  },
+  city: {
+    type: String,
+    default: "",
+  },
+  numberOfReviews: {
+    type: Number,
+    default: 0,
+  },
   rating: { type: Number, default: 0 },
   reviews: {
     type: [Reviews],

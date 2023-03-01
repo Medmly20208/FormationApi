@@ -18,8 +18,21 @@ exports.updateCompany = (req, res) => {
 };
 
 exports.getAllCompanies = (req, res) => {
+  let queryObj = { ...req.query };
+
+  let queryString = JSON.stringify(queryObj);
+
+  queryString = queryString.replace(
+    /\b(gte|gt|lt|lte)\b/g,
+    (match) => `$${match}`
+  );
+
+  queryObj = JSON.parse(queryString);
+  const regex = new RegExp(req.query.name, "i"); // i for case insensitive
+  queryObj["name"] = { $regex: regex };
   companyModel
-    .find()
+    .find(queryObj)
+
     .then((companies) => {
       res.status(200).json({
         status: "success",
@@ -85,23 +98,26 @@ exports.getAllReviews = (req, res) => {
     });
 };
 
-exports.postReview = (req, res) => {
-  companyModel
-    .findByIdAndUpdate(
-      req.params.id,
-      { $push: { reviews: req.body.review } },
-      { new: true }
-    )
-    .then((company) => {
-      res.status(200).json({
-        status: "success",
-        data: company,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
+exports.postReview = async (req, res) => {
+  try {
+    const company = await companyModel.findById(req.params.id);
+
+    company.reviews.push(req.body.review);
+    company.numberOfReviews = company.numberOfReviews + 1;
+    company.totalRating = company.totalRating + req.body.review.rating;
+
+    company.rating = company.totalRating / company.numberOfReviews;
+
+    company.save();
+
+    res.status(200).json({
+      status: "success",
+      data: company,
     });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
 };

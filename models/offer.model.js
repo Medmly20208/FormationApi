@@ -15,6 +15,11 @@ const offers = mongoose.Schema({
     trim: true,
     default: "",
   },
+  employerName: {
+    type: String,
+    trim: true,
+    default: "",
+  },
   title: {
     type: String,
     trim: true,
@@ -25,6 +30,11 @@ const offers = mongoose.Schema({
     type: String,
     trim: true,
     default: "",
+  },
+  numberOfApplicants: {
+    type: Number,
+    trim: true,
+    default: 0,
   },
   description: {
     type: String,

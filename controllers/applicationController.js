@@ -1,4 +1,5 @@
 const applicationModel = require("../models/application.model");
+const offerModel = require("../models/offer.model");
 
 exports.getApplicationByApplicantId = (req, res) => {
   applicationModel
@@ -20,7 +21,11 @@ exports.getApplicationByApplicantId = (req, res) => {
 exports.postApplication = (req, res) => {
   applicationModel
     .create(req.body.application)
-    .then((application) => {
+    .then(async (application) => {
+      await offerModel.findByIdAndUpdate(application.offerId, {
+        $inc: { numberOfApplicants: 1 },
+      });
+
       res.status(200).json({
         status: "success",
         data: application,
@@ -36,8 +41,14 @@ exports.postApplication = (req, res) => {
 
 exports.deleteApplicationById = (req, res) => {
   applicationModel
-    .findByIdAndDelete(req.params.id)
-    .then(() => {
+    .findById(req.params.id)
+    .then(async (application) => {
+      await offerModel.findByIdAndUpdate(application.offerId, {
+        $inc: { numberOfApplicants: -1 },
+      });
+
+      await application.delete();
+
       res.status(200).json({
         status: "success",
         data: null,

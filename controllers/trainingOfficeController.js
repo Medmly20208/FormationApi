@@ -18,8 +18,20 @@ exports.updateTrainingOffice = (req, res) => {
 };
 
 exports.getAllTrainingOffices = (req, res) => {
+  let queryObj = { ...req.query };
+
+  let queryString = JSON.stringify(queryObj);
+
+  queryString = queryString.replace(
+    /\b(gte|gt|lt|lte)\b/g,
+    (match) => `$${match}`
+  );
+
+  queryObj = JSON.parse(queryString);
+  const regex = new RegExp(req.query.name, "i"); // i for case insensitive
+  queryObj["name"] = { $regex: regex };
   trainingOfficeModel
-    .find()
+    .find(queryObj)
     .then((trainingOffices) => {
       res.status(200).json({
         status: "success",
@@ -84,23 +96,28 @@ exports.getAllReviews = (req, res) => {
     });
 };
 
-exports.postReview = (req, res) => {
-  trainingOfficeModel
-    .findByIdAndUpdate(
-      req.params.id,
-      { $push: { reviews: req.body.review } },
-      { new: true }
-    )
-    .then((trainingOffice) => {
-      res.status(200).json({
-        status: "success",
-        data: trainingOffice,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
+exports.postReview = async (req, res) => {
+  try {
+    const trainingOffice = await trainingOfficeModel.findById(req.params.id);
+
+    trainingOffice.reviews.push(req.body.review);
+    trainingOffice.numberOfReviews = trainingOffice.numberOfReviews + 1;
+    trainingOffice.totalRating =
+      trainingOffice.totalRating + req.body.review.rating;
+
+    trainingOffice.rating =
+      trainingOffice.totalRating / trainingOffice.numberOfReviews;
+
+    trainingOffice.save();
+
+    res.status(200).json({
+      status: "success",
+      data: trainingOffice,
     });
+  } catch (err) {
+    res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
 };
