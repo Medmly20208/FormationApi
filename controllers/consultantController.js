@@ -1,5 +1,6 @@
 const consultant = require("../models/consultant.model");
 const multer = require("multer");
+const excludeFromObject = require("../helpers/excludeFromObjects");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -57,8 +58,14 @@ exports.CreateConsultant = (req, res) => {
 };
 
 exports.updateConsultant = (req, res) => {
-  req.body.profileImg = req.files["profileImg"][0].filename;
-  req.body.cv = req.files["cv"][0].filename;
+  console.log(req.body);
+  if (req.body.profileImg) {
+    req.body.profileImg = req.files["profileImg"][0].filename;
+  }
+  if (req.body.cv) {
+    req.body.cv = req.files["cv"][0].filename;
+  }
+
   consultant
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((consultant) => {
@@ -178,4 +185,15 @@ exports.postReview = async (req, res) => {
       message: err.message,
     });
   }
+};
+
+exports.excludeUnaouthorizedFields = (req, res, next) => {
+  req.body = excludeFromObject(req.body, [
+    "totalRating",
+    "numberOfReviews",
+    "rating",
+    "reviews",
+  ]);
+
+  next();
 };

@@ -6,7 +6,11 @@ Router.post("/", offersController.CreateOffer);
 Router.get("/", offersController.getAllOffers);
 Router.get("/:EmployerId", offersController.getOffersByEmployerId);
 
-Router.patch("/:id", offersController.updateOffer);
+Router.patch(
+  "/:id",
+  offersController.excludeUnaouthorizedFields,
+  offersController.updateOffer
+);
 Router.delete("/:id", offersController.deleteOffertById);
 
 module.exports = Router;

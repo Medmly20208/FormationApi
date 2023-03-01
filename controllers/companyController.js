@@ -1,5 +1,6 @@
 const companyModel = require("../models/company.model");
 const multer = require("multer");
+const excludeFromObject = require("../helpers/excludeFromObjects");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -17,8 +18,10 @@ const storage = multer.diskStorage({
 exports.upload = multer({ storage }).single("profileImg");
 
 exports.updateCompany = (req, res) => {
-  console.log(req.file);
-  req.body.profileImg = req.file.filename;
+  if (req.body.profileImg) {
+    req.body.profileImg = req.file.filename;
+  }
+
   companyModel
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((company) => {
@@ -138,4 +141,15 @@ exports.postReview = async (req, res) => {
       message: err.message,
     });
   }
+};
+
+exports.excludeUnaouthorizedFields = (req, res, next) => {
+  req.body = excludeFromObject(req.body, [
+    "totalRating",
+    "numberOfReviews",
+    "rating",
+    "reviews",
+  ]);
+
+  next();
 };

@@ -9,6 +9,7 @@ Router.get("/:id", trainingOfficeControllers.getTrainingOfficeById);
 //private route methods
 Router.patch(
   "/:id",
+  trainingOfficeControllers.excludeUnaouthorizedFields,
   trainingOfficeControllers.upload,
   trainingOfficeControllers.updateTrainingOffice
 );

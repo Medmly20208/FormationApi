@@ -5,6 +5,10 @@ const Router = express.Router();
 Router.get("/:id", applicationController.getApplicationByApplicantId);
 Router.post("/", applicationController.postApplication);
 Router.delete("/:id", applicationController.deleteApplicationById);
-Router.patch("/:id", applicationController.updateApplication);
+Router.patch(
+  "/:id",
+  applicationController.excludeUnaouthorizedFields,
+  applicationController.updateApplication
+);
 
 module.exports = Router;

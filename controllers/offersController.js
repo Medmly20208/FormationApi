@@ -1,4 +1,5 @@
 const offers = require("../models/offer.model");
+const excludeFromObject = require("../helpers/excludeFromObjects");
 
 exports.getAllOffers = (req, res) => {
   let queryObj = { ...req.query };
@@ -98,4 +99,16 @@ exports.deleteOffertById = (req, res) => {
         message: err.message,
       });
     });
+};
+
+exports.excludeUnaouthorizedFields = (req, res, next) => {
+  req.body = excludeFromObject(req.body, [
+    "numberOfApplicants",
+    "employerId",
+    "employerType",
+    "employerField",
+    "employerName",
+  ]);
+
+  next();
 };
