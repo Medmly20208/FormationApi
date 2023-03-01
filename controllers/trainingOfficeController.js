@@ -1,6 +1,23 @@
 const trainingOfficeModel = require("../models/trainingOffice.model");
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./files/profileImgTrainingOffice");
+  },
+  filename: (req, file, cb) => {
+    const filename = `trainingoffice_${Date.now()}_${Math.round(
+      Math.random() * 100
+    )}${file.originalname}`;
+
+    cb(null, filename);
+  },
+});
+
+exports.upload = multer({ storage }).single("profileImg");
 
 exports.updateTrainingOffice = (req, res) => {
+  req.body.profileImg = req.file.filename;
   trainingOfficeModel
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((trainingOffice) => {

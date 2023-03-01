@@ -7,7 +7,11 @@ Router.get("/", consultantController.getAllConsultants);
 Router.get("/:id", consultantController.getConsultantById);
 
 //private route methods
-Router.patch("/:id", consultantController.updateConsultant);
+Router.patch(
+  "/:id",
+  consultantController.uploadFiles,
+  consultantController.updateConsultant
+);
 Router.delete("/:id", consultantController.deleteConsultantById);
 
 //Reviews controllers

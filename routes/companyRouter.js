@@ -7,7 +7,7 @@ Router.get("/", companyController.getAllCompanies);
 Router.get("/:id", companyController.getCompanyById);
 
 //private route methods
-Router.patch("/:id", companyController.updateCompany);
+Router.patch("/:id", companyController.upload, companyController.updateCompany);
 Router.delete("/:id", companyController.deleteCompanyById);
 
 //Reviews controllers

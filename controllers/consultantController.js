@@ -1,5 +1,44 @@
 const consultant = require("../models/consultant.model");
+const multer = require("multer");
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (file.fieldname === "profileImg") {
+      cb(null, "./files/profileImgConsultant");
+    } else {
+      cb(null, "./files/cv");
+    }
+  },
+  filename: (req, file, cb) => {
+    if (file.fieldname === "profileImg") {
+      const filename = `consultantImg_${Date.now()}_${Math.round(
+        Math.random() * 100
+      )}${file.originalname}`;
+      cb(null, filename);
+    } else {
+      const filename = `cv_${Date.now()}_${Math.round(Math.random() * 100)}${
+        file.originalname
+      }`;
+      cb(null, filename);
+    }
+  },
+});
+
+exports.uploadFiles = multer({
+  storage: storage,
+  limits: {
+    fileSize: "2mb",
+  },
+}).fields([
+  {
+    name: "profileImg",
+    maxCount: 1,
+  },
+  {
+    name: "cv",
+    maxCount: 1,
+  },
+]);
 exports.CreateConsultant = (req, res) => {
   consultant
     .create({ ...req.body })
@@ -18,6 +57,8 @@ exports.CreateConsultant = (req, res) => {
 };
 
 exports.updateConsultant = (req, res) => {
+  req.body.profileImg = req.files["profileImg"][0].filename;
+  req.body.cv = req.files["cv"][0].filename;
   consultant
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((consultant) => {

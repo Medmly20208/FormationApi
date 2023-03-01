@@ -27,7 +27,7 @@ const company = mongoose.Schema({
     trim: true,
     default: "",
   },
-  img: {
+  profileImg: {
     type: String,
     trim: true,
     default: "",

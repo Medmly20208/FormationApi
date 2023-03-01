@@ -8,6 +8,7 @@ const companyRouter = require("./routes/companyRouter");
 const offerRouter = require("./routes/offerRouter");
 const applicationRouter = require("./routes/applicationRouter");
 
+app.use(express.static("./files"));
 app.use(cors());
 app.use(express.json());
 

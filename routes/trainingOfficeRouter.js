@@ -7,7 +7,11 @@ Router.get("/", trainingOfficeControllers.getAllTrainingOffices);
 Router.get("/:id", trainingOfficeControllers.getTrainingOfficeById);
 
 //private route methods
-Router.patch("/:id", trainingOfficeControllers.updateTrainingOffice);
+Router.patch(
+  "/:id",
+  trainingOfficeControllers.upload,
+  trainingOfficeControllers.updateTrainingOffice
+);
 Router.delete("/:id", trainingOfficeControllers.deleteTrainingOfficeById);
 
 //Reviews controllers

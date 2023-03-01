@@ -32,7 +32,7 @@ const consultant = mongoose.Schema({
     trim: true,
     default: "",
   },
-  personnelImg: {
+  profileImg: {
     type: String,
     trim: true,
     default: "",

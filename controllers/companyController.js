@@ -1,6 +1,24 @@
 const companyModel = require("../models/company.model");
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./files/profileImgCompany");
+  },
+  filename: (req, file, cb) => {
+    const filename = `${Date.now()}_${Math.round(Math.random() * 100)}${
+      file.originalname
+    }`;
+
+    cb(null, filename);
+  },
+});
+
+exports.upload = multer({ storage }).single("profileImg");
 
 exports.updateCompany = (req, res) => {
+  console.log(req.file);
+  req.body.profileImg = req.file.filename;
   companyModel
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((company) => {
