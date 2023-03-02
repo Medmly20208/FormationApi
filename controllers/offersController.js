@@ -1,5 +1,6 @@
 const offers = require("../models/offer.model");
 const excludeFromObject = require("../helpers/excludeFromObjects");
+const UnauthorizedFields = require("../config/UnauthorizedFields");
 
 exports.getAllOffers = (req, res) => {
   let queryObj = { ...req.query };
@@ -19,6 +20,9 @@ exports.getAllOffers = (req, res) => {
 
   offers
     .find(queryObj)
+    .select(
+      "title numberOfApplicants city employerImage employerId employerType"
+    )
     .then((offers) => {
       res.status(200).json({
         status: "success",
@@ -102,13 +106,10 @@ exports.deleteOffertById = (req, res) => {
 };
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
-  req.body = excludeFromObject(req.body, [
-    "numberOfApplicants",
-    "employerId",
-    "employerType",
-    "employerField",
-    "employerName",
-  ]);
+  req.body = excludeFromObject(
+    req.body,
+    UnauthorizedFields.offerUnauthorizedFields
+  );
 
   next();
 };

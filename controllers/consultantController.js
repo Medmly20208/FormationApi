@@ -1,6 +1,7 @@
 const consultant = require("../models/consultant.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
+const UnauthorizedFields = require("../config/UnauthorizedFields");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -58,11 +59,10 @@ exports.CreateConsultant = (req, res) => {
 };
 
 exports.updateConsultant = (req, res) => {
-  console.log(req.body);
-  if (req.body.profileImg) {
+  if (req.files["profileImg"][0]) {
     req.body.profileImg = req.files["profileImg"][0].filename;
   }
-  if (req.body.cv) {
+  if (req.files["cv"][0]) {
     req.body.cv = req.files["cv"][0].filename;
   }
 
@@ -97,6 +97,7 @@ exports.getAllConsultants = (req, res) => {
   queryObj["name"] = { $regex: regex };
   consultant
     .find(queryObj)
+    .select("profileImg name rating numberOfReviews field")
     .then((consultants) => {
       res.status(200).json({
         status: "success",
@@ -188,12 +189,10 @@ exports.postReview = async (req, res) => {
 };
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
-  req.body = excludeFromObject(req.body, [
-    "totalRating",
-    "numberOfReviews",
-    "rating",
-    "reviews",
-  ]);
+  req.body = excludeFromObject(
+    req.body,
+    UnauthorizedFields.consultantUnauthorizedFields
+  );
 
   next();
 };

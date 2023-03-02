@@ -1,6 +1,7 @@
 const applicationModel = require("../models/application.model");
 const offerModel = require("../models/offer.model");
 const excludeFromObject = require("../helpers/excludeFromObjects");
+const UnauthorizedFields = require("../config/UnauthorizedFields");
 
 exports.getApplicationByApplicantId = (req, res) => {
   applicationModel
@@ -64,7 +65,6 @@ exports.deleteApplicationById = (req, res) => {
 };
 
 exports.updateApplication = (req, res) => {
-  console.log(req.body);
   applicationModel
     .findByIdAndUpdate(
       req.params.id,
@@ -86,13 +86,10 @@ exports.updateApplication = (req, res) => {
 };
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
-  req.body.application = excludeFromObject(req.body.application, [
-    "applicantId",
-    "applicantType",
-    "employerType",
-    "employerId",
-    "offerId",
-  ]);
+  req.body.application = excludeFromObject(
+    req.body.application,
+    UnauthorizedFields.applicationUnauthorizedFields
+  );
 
   next();
 };

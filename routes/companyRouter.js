@@ -9,8 +9,9 @@ Router.get("/:id", companyController.getCompanyById);
 //private route methods
 Router.patch(
   "/:id",
-  companyController.excludeUnaouthorizedFields,
   companyController.upload,
+  companyController.excludeUnaouthorizedFields,
+
   companyController.updateCompany
 );
 Router.delete("/:id", companyController.deleteCompanyById);

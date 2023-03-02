@@ -1,23 +1,27 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const userTypes = ["consultant", "company", "trainingOffice"];
 
-const user = mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-    trim: true,
+const user = mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    type: {
+      type: String,
+      required: true,
+      trim: true,
+    },
   },
-  password: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  type: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-});
+  { timestamps: true }
+);
 
 user.statics.login = async function (email, password) {
   const user = await this.findOne({ email });
@@ -37,6 +41,12 @@ user.statics.login = async function (email, password) {
 
 user.statics.signup = async function (email, password, type) {
   const user = await this.findOne({ email });
+
+  if (userTypes.indexOf(type) === -1) {
+    throw Error(
+      "this type is invalid , valid types are 'company' 'trainingOffice' 'consultant' "
+    );
+  }
 
   if (user) {
     throw Error("this email is already in use");

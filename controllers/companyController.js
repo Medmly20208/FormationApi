@@ -1,6 +1,7 @@
 const companyModel = require("../models/company.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
+const UnauthorizedFields = require("../config/UnauthorizedFields");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
 exports.upload = multer({ storage }).single("profileImg");
 
 exports.updateCompany = (req, res) => {
-  if (req.body.profileImg) {
+  if (req.file) {
     req.body.profileImg = req.file.filename;
   }
 
@@ -53,7 +54,7 @@ exports.getAllCompanies = (req, res) => {
   queryObj["name"] = { $regex: regex };
   companyModel
     .find(queryObj)
-
+    .select("profileImg name rating numberOfReviews field")
     .then((companies) => {
       res.status(200).json({
         status: "success",
@@ -144,12 +145,10 @@ exports.postReview = async (req, res) => {
 };
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
-  req.body = excludeFromObject(req.body, [
-    "totalRating",
-    "numberOfReviews",
-    "rating",
-    "reviews",
-  ]);
+  req.body = excludeFromObject(
+    req.body,
+    UnauthorizedFields.companyUnauthorizedFields
+  );
 
   next();
 };

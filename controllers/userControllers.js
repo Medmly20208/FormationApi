@@ -7,8 +7,8 @@ const isEmailValid = require("../helpers/isEmailValid");
 const isPasswordValid = require("../helpers/isPasswordValid");
 const isTypeValid = require("../helpers/isTypeValid");
 
-const createToken = (_id) => {
-  return jwt.sign({ _id }, process.env.SECRET_JWT, { expiresIn: "3d" });
+const createToken = (_id, type) => {
+  return jwt.sign({ _id, type }, process.env.SECRET_JWT, { expiresIn: "3d" });
 };
 
 const CreateTypeUser = async (id, email, type) => {
@@ -74,7 +74,7 @@ exports.ValidateLogInData = (req, res, next) => {
 exports.SignUp = (req, res) => {
   User.signup(req.body.email, req.body.password, req.body.type)
     .then(async (user) => {
-      const token = createToken(user._id);
+      const token = createToken(user._id, user.type);
       await CreateTypeUser(user._id, user.email, req.body.type);
       return res.json({
         status: "success",
@@ -92,7 +92,7 @@ exports.SignUp = (req, res) => {
 exports.LogIn = (req, res) => {
   User.login(req.body.email, req.body.password)
     .then((user) => {
-      const token = createToken(user._id);
+      const token = createToken(user._id, user.type);
 
       return res.json({
         status: "success",

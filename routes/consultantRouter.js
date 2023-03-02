@@ -9,8 +9,8 @@ Router.get("/:id", consultantController.getConsultantById);
 //private route methods
 Router.patch(
   "/:id",
-  consultantController.excludeUnaouthorizedFields,
   consultantController.uploadFiles,
+  consultantController.excludeUnaouthorizedFields,
   consultantController.updateConsultant
 );
 Router.delete("/:id", consultantController.deleteConsultantById);

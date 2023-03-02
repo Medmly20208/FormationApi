@@ -1,6 +1,7 @@
 const trainingOfficeModel = require("../models/trainingOffice.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
+const UnauthorizedFields = require("../config/UnauthorizedFields");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -18,6 +19,7 @@ const storage = multer.diskStorage({
 exports.upload = multer({ storage }).single("profileImg");
 
 exports.updateTrainingOffice = (req, res) => {
+  console.log(req.body);
   if (req.body.profileImg) {
     req.body.profileImg = req.file.filename;
   }
@@ -52,6 +54,7 @@ exports.getAllTrainingOffices = (req, res) => {
   queryObj["name"] = { $regex: regex };
   trainingOfficeModel
     .find(queryObj)
+    .select("profileImg name rating numberOfReviews city")
     .then((trainingOffices) => {
       res.status(200).json({
         status: "success",
@@ -143,12 +146,10 @@ exports.postReview = async (req, res) => {
 };
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
-  req.body = excludeFromObject(req.body, [
-    "totalRating",
-    "numberOfReviews",
-    "rating",
-    "reviews",
-  ]);
+  req.body = excludeFromObject(
+    req.body,
+    UnauthorizedFields.trainingOfficeUnauthorizedFields
+  );
 
   next();
 };
