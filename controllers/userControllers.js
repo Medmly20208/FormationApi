@@ -8,7 +8,9 @@ const isPasswordValid = require("../helpers/isPasswordValid");
 const isTypeValid = require("../helpers/isTypeValid");
 
 const createToken = (_id, type) => {
-  return jwt.sign({ _id, type }, process.env.SECRET_JWT, { expiresIn: "3d" });
+  return jwt.sign({ _id, type }, process.env.SECRET_JWT, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 };
 
 const CreateTypeUser = async (id, email, type) => {
@@ -61,9 +63,10 @@ exports.ValidateSignUpData = (req, res, next) => {
 exports.ValidateLogInData = (req, res, next) => {
   try {
     isEmailValid(req.body.email);
+    isPasswordValid(req.body.password);
   } catch (error) {
     return res.json({
-      status: 404,
+      status: 401,
       message: error.message,
     });
   }
@@ -78,11 +81,12 @@ exports.SignUp = (req, res) => {
       await CreateTypeUser(user._id, user.email, req.body.type);
       return res.json({
         status: "success",
-        data: { email: user.email, token },
+        token,
+        data: { email: user.email },
       });
     })
     .catch((err) => {
-      return res.status(400).json({
+      return res.status(401).json({
         message: "failed",
         error: err.message,
       });
@@ -96,11 +100,12 @@ exports.LogIn = (req, res) => {
 
       return res.json({
         status: "success",
-        data: { email: user.email, token },
+        token,
+        data: { email: user.email },
       });
     })
     .catch((err) => {
-      return res.status(400).json({
+      return res.status(401).json({
         status: "failed",
         message: err.message,
       });

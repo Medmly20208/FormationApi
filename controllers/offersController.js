@@ -26,6 +26,7 @@ exports.getAllOffers = (req, res) => {
     .then((offers) => {
       res.status(200).json({
         status: "success",
+        results: offers.length,
         data: offers,
       });
     })
@@ -40,10 +41,27 @@ exports.getAllOffers = (req, res) => {
 exports.CreateOffer = (req, res) => {
   offers
     .create({ ...req.body })
-    .then((consultant) => {
+    .then((offer) => {
       res.status(200).json({
         status: "success",
-        data: consultant,
+        data: offer,
+      });
+    })
+    .catch((err) => {
+      res.status(400).json({
+        status: "failed",
+        message: err.message,
+      });
+    });
+};
+
+exports.getOfferById = (req, res) => {
+  offers
+    .findById(req.params.id)
+    .then((offer) => {
+      res.status(200).json({
+        status: "success",
+        data: offer,
       });
     })
     .catch((err) => {

@@ -7,33 +7,34 @@ const user = mongoose.Schema(
     email: {
       type: String,
       required: true,
+      lowercase: true,
       trim: true,
     },
     password: {
       type: String,
       required: true,
       trim: true,
+      required: true,
     },
     type: {
       type: String,
       required: true,
       trim: true,
     },
+    changedPassword: Date,
   },
   { timestamps: true }
 );
 
 user.statics.login = async function (email, password) {
   const user = await this.findOne({ email });
+  let isPasswordCorrect;
 
-  if (!user) {
-    throw Error("this user doesn't exist");
+  if (user) {
+    isPasswordCorrect = await bcrypt.compare(password, user.password);
   }
-
-  const isPasswordCorrect = await bcrypt.compare(password, user.password);
-
-  if (!isPasswordCorrect) {
-    throw Error("incorrect password");
+  if (!user || !isPasswordCorrect) {
+    throw Error("Password or email aren't correct");
   }
 
   return user;

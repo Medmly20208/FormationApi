@@ -58,6 +58,7 @@ exports.getAllCompanies = (req, res) => {
     .then((companies) => {
       res.status(200).json({
         status: "success",
+        results: companies.length,
         data: companies,
       });
     })
@@ -73,13 +74,13 @@ exports.getCompanyById = (req, res) => {
   companyModel
     .findById(req.params.id)
     .then((company) => {
-      res.status(200).json({
+      return res.status(200).json({
         status: "success",
         data: company,
       });
     })
     .catch((err) => {
-      res.status(400).json({
+      return res.status(400).json({
         status: "failed",
         message: err.message,
       });

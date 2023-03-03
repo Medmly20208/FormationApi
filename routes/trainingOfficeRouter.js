@@ -1,10 +1,15 @@
 const express = require("express");
 const trainingOfficeControllers = require("../controllers/trainingOfficeController");
+const authController = require("../controllers/authController");
 const Router = express.Router();
 
 // public route methods
 Router.get("/", trainingOfficeControllers.getAllTrainingOffices);
-Router.get("/:id", trainingOfficeControllers.getTrainingOfficeById);
+Router.get(
+  "/:id",
+  authController.checkIfUserAuthenticated,
+  trainingOfficeControllers.getTrainingOfficeById
+);
 
 //private route methods
 Router.patch(

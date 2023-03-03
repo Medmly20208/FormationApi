@@ -1,10 +1,15 @@
 const express = require("express");
 const consultantController = require("../controllers/consultantController");
+const authController = require("../controllers/authController");
 const Router = express.Router();
 
 // public route methods
 Router.get("/", consultantController.getAllConsultants);
-Router.get("/:id", consultantController.getConsultantById);
+Router.get(
+  "/:id",
+  authController.checkIfUserAuthenticated,
+  consultantController.getConsultantById
+);
 
 //private route methods
 Router.patch(

@@ -58,6 +58,7 @@ exports.getAllTrainingOffices = (req, res) => {
     .then((trainingOffices) => {
       res.status(200).json({
         status: "success",
+        results: trainingOffices.length,
         data: trainingOffices,
       });
     })

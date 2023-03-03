@@ -101,6 +101,7 @@ exports.getAllConsultants = (req, res) => {
     .then((consultants) => {
       res.status(200).json({
         status: "success",
+        results: consultants.length,
         data: consultants,
       });
     })
