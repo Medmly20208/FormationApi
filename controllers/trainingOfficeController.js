@@ -123,7 +123,9 @@ exports.getAllReviews = (req, res) => {
 exports.postReview = async (req, res) => {
   try {
     const trainingOffice = await trainingOfficeModel.findById(req.params.id);
-
+    if (!trainingOffice) {
+      throw new Error("this user doesn't exist");
+    }
     trainingOffice.reviews.push(req.body.review);
     trainingOffice.numberOfReviews = trainingOffice.numberOfReviews + 1;
     trainingOffice.totalRating =

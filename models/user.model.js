@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const userTypes = ["consultant", "company", "trainingOffice"];
+const crypto = require("crypto");
 
 const user = mongoose.Schema(
   {
@@ -20,7 +20,17 @@ const user = mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      enum: ["trainingOffice", "company", "consultant"],
     },
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    passwordResetToken: String,
+    passwordResetTokenExpires: Date,
     changedPassword: Date,
   },
   { timestamps: true }
@@ -43,12 +53,6 @@ user.statics.login = async function (email, password) {
 user.statics.signup = async function (email, password, type) {
   const user = await this.findOne({ email });
 
-  if (userTypes.indexOf(type) === -1) {
-    throw Error(
-      "this type is invalid , valid types are 'company' 'trainingOffice' 'consultant' "
-    );
-  }
-
   if (user) {
     throw Error("this email is already in use");
   }
@@ -59,6 +63,19 @@ user.statics.signup = async function (email, password, type) {
   const newUser = await this.create({ email, password: hashedPassword, type });
 
   return newUser;
+};
+
+user.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetTokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+
+  return resetToken;
 };
 
 const UserModel = mongoose.model("users", user);

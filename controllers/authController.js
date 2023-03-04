@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
 const user = require("../models/user.model");
+const crypto = require("crypto");
+const bcrypt = require("bcrypt");
+const sendEmail = require("../utils/email");
+const isPasswordValid = require("../helpers/isPasswordValid");
+const { createToken } = require("../controllers/userControllers");
 
 const isUserAuthenticated = async (req) => {
   // check if the authorization token exists in the right form
@@ -46,4 +51,102 @@ exports.checkIfUserAuthenticated = (req, res, next) => {
         message: err.message,
       });
     });
+};
+
+exports.forgetPassword = async (req, res, next) => {
+  const User = await user.findOne({ email: req.body.email });
+
+  if (!User) {
+    return res.status(400).json({
+      sttaus: "failed",
+      message: "user doesn't exist ",
+    });
+  }
+
+  const resetToken = User.createPasswordResetToken();
+  await User.save();
+
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `forget password ,if you forget your password send patch request ${resetUrl}`;
+  const subject = "forget password order";
+
+  const options = {
+    email: User.email,
+    message,
+    subject,
+  };
+
+  try {
+    await sendEmail(options);
+  } catch (err) {
+    User.passwordResetToken = undefined;
+    User.passwordResetTokenExpires = undefined;
+    return res.status(500).json({
+      status: "failed",
+      message: "internal server error",
+    });
+  }
+
+  res.status(200).json({
+    status: "succes",
+    message: "token sent to email",
+  });
+};
+
+exports.resetPassword = async (req, res, next) => {
+  const passwordResetToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const User = await user.findOne({
+    passwordResetToken,
+    passwordResetTokenExpires: { $gte: Date.now() },
+  });
+
+  if (!User) {
+    return res.status(400).json({
+      status: "failed",
+      message: "user doesn't exist or the token expired",
+    });
+  }
+
+  if (
+    req.body.confirmPassword !== req.body.password ||
+    !req.body.password ||
+    !req.body.confirmPassword
+  ) {
+    return res.status(400).json({
+      status: "failed",
+      message: "please send a correct password and confirm password",
+    });
+  }
+
+  try {
+    isPasswordValid(req.body.password);
+  } catch (err) {
+    return res.status(400).json({
+      status: "failed",
+      message: "your password isn't strong",
+    });
+  }
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(req.body.password, salt);
+  User.password = hashedPassword;
+  User.passwordResetToken = undefined;
+  User.passwordResetTokenExpires = undefined;
+  User.changedPassword = Date.now();
+
+  await User.save();
+
+  const token = await createToken(User._id, User.type);
+
+  return res.status(200).json({
+    status: "success",
+    token,
+    message: "successfully changed your password",
+  });
 };

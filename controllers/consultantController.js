@@ -166,7 +166,9 @@ exports.getAllReviews = (req, res) => {
 exports.postReview = async (req, res) => {
   try {
     const consultantUser = await consultant.findById(req.params.id);
-
+    if (!consultantUser) {
+      throw new Error("this user doesn't exist");
+    }
     consultantUser.reviews.push(req.body.review);
     consultantUser.numberOfReviews = consultantUser.numberOfReviews + 1;
     consultantUser.totalRating =

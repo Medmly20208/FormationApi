@@ -125,6 +125,10 @@ exports.postReview = async (req, res) => {
   try {
     const company = await companyModel.findById(req.params.id);
 
+    if (!company) {
+      throw new Error("this user doesn't exist");
+    }
+
     company.reviews.push(req.body.review);
     company.numberOfReviews = company.numberOfReviews + 1;
     company.totalRating = company.totalRating + req.body.review.rating;

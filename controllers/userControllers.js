@@ -5,9 +5,8 @@ const company = require("../models/company.model");
 const jwt = require("jsonwebtoken");
 const isEmailValid = require("../helpers/isEmailValid");
 const isPasswordValid = require("../helpers/isPasswordValid");
-const isTypeValid = require("../helpers/isTypeValid");
 
-const createToken = (_id, type) => {
+exports.createToken = (_id, type) => {
   return jwt.sign({ _id, type }, process.env.SECRET_JWT, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
@@ -49,7 +48,6 @@ exports.ValidateSignUpData = (req, res, next) => {
   try {
     isEmailValid(req.body.email);
     isPasswordValid(req.body.password);
-    isTypeValid(req.body.type);
   } catch (error) {
     return res.json({
       status: 404,
