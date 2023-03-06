@@ -13,6 +13,12 @@ const Router = express.Router();
 Router.post("/forgetPassword", authController.forgetPassword);
 Router.post("/resetPassword/:token", authController.resetPassword);
 
+Router.post(
+  "/updatePassword",
+  authController.checkIfUserAuthenticated,
+  authController.updatePassword
+);
+
 Router.post("/signup", ValidateSignUpData, SignUp);
 Router.post("/login", ValidateLogInData, LogIn);
 

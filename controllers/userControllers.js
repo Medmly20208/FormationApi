@@ -2,15 +2,9 @@ const User = require("../models/user.model");
 const Consultant = require("../models/consultant.model");
 const trainingOffice = require("../models/trainingOffice.model");
 const company = require("../models/company.model");
-const jwt = require("jsonwebtoken");
+const createToken = require("../utils/createToken");
 const isEmailValid = require("../helpers/isEmailValid");
 const isPasswordValid = require("../helpers/isPasswordValid");
-
-exports.createToken = (_id, type) => {
-  return jwt.sign({ _id, type }, process.env.SECRET_JWT, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
 
 const CreateTypeUser = async (id, email, type) => {
   if (type === "consultant") {

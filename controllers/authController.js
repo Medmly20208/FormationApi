@@ -4,7 +4,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/email");
 const isPasswordValid = require("../helpers/isPasswordValid");
-const { createToken } = require("../controllers/userControllers");
+const createToken = require("../utils/createToken");
 
 const isUserAuthenticated = async (req) => {
   // check if the authorization token exists in the right form
@@ -110,7 +110,7 @@ exports.resetPassword = async (req, res, next) => {
   if (!User) {
     return res.status(400).json({
       status: "failed",
-      message: "user doesn't exist or the token expired",
+      message: "user doesn't exist or the token has been expired or invalid ",
     });
   }
 
@@ -148,5 +148,69 @@ exports.resetPassword = async (req, res, next) => {
     status: "success",
     token,
     message: "successfully changed your password",
+  });
+};
+
+exports.updatePassword = async function (req, res, next) {
+  const User = await user.findOne({ ...req.body });
+
+  if (!User) {
+    return res.status(400).json({
+      status: "failed",
+      message: "user not found",
+    });
+  }
+
+  const isPasswordCorrect = await bcrypt.compare(
+    req.body.currentPassword,
+    User.password
+  );
+
+  if (!isPasswordCorrect) {
+    return res.status(400).json({
+      status: "failed",
+      message: "password is not correct",
+    });
+  }
+
+  if (
+    !req.body.newPassword ||
+    !req.body.confirmNewPassword ||
+    req.body.newPassword != req.body.confirmNewPassword
+  ) {
+    return res.status(400).json({
+      status: "failed",
+      message: "newPassword and confirmNewPassword are not the same ",
+    });
+  }
+
+  try {
+    isPasswordValid(req.body.newPassword);
+  } catch (err) {
+    return res.status(400).json({
+      status: "failed",
+      message: err.message,
+    });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+
+  try {
+    User.password = hashedPassword;
+    await User.save();
+  } catch (err) {
+    return res.status(500).json({
+      status: "failed",
+      message: "internal server error",
+    });
+  }
+
+  const token = createToken(User._id, User.type);
+
+  return res.status(200).json({
+    status: "success",
+    token,
+    message: "you changed your password successfully",
   });
 };
