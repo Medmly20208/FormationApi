@@ -43,7 +43,6 @@ const trainingOffice = mongoose.Schema(
       trim: true,
       default: "",
     },
-
     numberOfReviews: {
       type: Number,
       default: 0,

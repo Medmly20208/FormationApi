@@ -22,12 +22,10 @@ const user = mongoose.Schema(
       trim: true,
       enum: ["trainingOffice", "company", "consultant"],
     },
-    role: {
-      type: String,
-      required: true,
-      trim: true,
-      enum: ["user", "admin"],
-      default: "user",
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
     },
     passwordResetToken: String,
     passwordResetTokenExpires: Date,

@@ -11,6 +11,7 @@ const CreateTypeUser = async (id, email, type) => {
     return Consultant.create({
       consultantId: id,
       email,
+      active: true,
     }).catch((error) => {
       throw Error(error.message);
     });
@@ -20,6 +21,7 @@ const CreateTypeUser = async (id, email, type) => {
       .create({
         trainingOfficeId: id,
         email,
+        active: true,
       })
       .catch((error) => {
         throw Error(error.message);
@@ -31,6 +33,7 @@ const CreateTypeUser = async (id, email, type) => {
       .create({
         companyId: id,
         email,
+        active: true,
       })
       .catch((error) => {
         throw Error(error.message);
@@ -55,9 +58,8 @@ exports.ValidateSignUpData = (req, res, next) => {
 exports.ValidateLogInData = (req, res, next) => {
   try {
     isEmailValid(req.body.email);
-    isPasswordValid(req.body.password);
   } catch (error) {
-    return res.json({
+    return res.status(401).json({
       status: 401,
       message: error.message,
     });
@@ -71,6 +73,13 @@ exports.SignUp = (req, res) => {
     .then(async (user) => {
       const token = createToken(user._id, user.type);
       await CreateTypeUser(user._id, user.email, req.body.type);
+      res.cookie("jwt", token, {
+        expires: new Date(
+          Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+        ),
+        secure: true,
+        httpOnly: true,
+      });
       return res.json({
         status: "success",
         token,
@@ -102,4 +111,13 @@ exports.LogIn = (req, res) => {
         message: err.message,
       });
     });
+};
+
+exports.deleteUser = async function (req, res) {
+  await User.findByIdAndUpdate(req.params.id, { active: false });
+
+  res.status(204).json({
+    status: "success",
+    data: null,
+  });
 };

@@ -17,10 +17,15 @@ Router.patch(
   "/:id",
   companyController.upload,
   companyController.excludeUnaouthorizedFields,
+  authController.checkIfUserAuthenticated,
   companyController.updateCompany
 );
 
-Router.delete("/:id", companyController.deleteCompanyById);
+Router.delete(
+  "/:id",
+  authController.checkIfUserAuthenticated,
+  companyController.deleteCompanyById
+);
 
 //Reviews controllers
 Router.get("/:id/reviews", companyController.getAllReviews);
