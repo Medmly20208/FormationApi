@@ -82,7 +82,7 @@ exports.updateConsultant = (req, res) => {
     });
 };
 
-exports.getAllConsultants = (req, res) => {
+exports.getAllConsultants = async (req, res) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -95,11 +95,31 @@ exports.getAllConsultants = (req, res) => {
   queryObj = JSON.parse(queryString);
   const regex = new RegExp(req.query.name, "i"); // i for case insensitive
   queryObj["name"] = { $regex: regex };
+
+  //sort
   const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
+
+  //pagination
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  if (req.query.page) {
+    const numOfConsultants = await consultant.countDocuments();
+    if (skip > numOfConsultants) {
+      return res.status(200).json({
+        status: "failed",
+        message: "we don't have enough data",
+      });
+    }
+  }
+
   consultant
     .find(queryObj)
     .select("profileImg name rating city field createdAt")
     .sort(querySort)
+    .skip(skip)
+    .limit(limit)
     .then((consultants) => {
       res.status(200).json({
         status: "success",

@@ -1,4 +1,4 @@
-const trainingOfficeModel = require("../models/trainingOffice.model");
+const trainingOffice = require("../models/trainingOffice.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
@@ -23,7 +23,7 @@ exports.updateTrainingOffice = (req, res) => {
   if (req.body.profileImg) {
     req.body.profileImg = req.file.filename;
   }
-  trainingOfficeModel
+  trainingOffice
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((trainingOffice) => {
       res.status(200).json({
@@ -39,7 +39,7 @@ exports.updateTrainingOffice = (req, res) => {
     });
 };
 
-exports.getAllTrainingOffices = (req, res) => {
+exports.getAllTrainingOffices = async (req, res) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -53,10 +53,28 @@ exports.getAllTrainingOffices = (req, res) => {
   const regex = new RegExp(req.query.name, "i"); // i for case insensitive
   queryObj["name"] = { $regex: regex };
   const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
-  trainingOfficeModel
+
+  //pagination
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  if (req.query.page) {
+    const numOfTrainingOffices = await trainingOffice.countDocuments();
+    if (skip > numOfTrainingOffices) {
+      return res.status(200).json({
+        status: "failed",
+        message: "we don't have enough data",
+      });
+    }
+  }
+
+  trainingOffice
     .find(queryObj)
     .select("profileImg name rating numberOfReviews city")
     .sort(querySort)
+    .skip(skip)
+    .limit(limit)
     .then((trainingOffices) => {
       res.status(200).json({
         status: "success",
@@ -72,7 +90,7 @@ exports.getAllTrainingOffices = (req, res) => {
 };
 
 exports.getTrainingOfficeById = (req, res) => {
-  trainingOfficeModel
+  trainingOffice
     .findById(req.params.id)
     .then((trainingOffice) => {
       res.status(200).json({
@@ -89,7 +107,7 @@ exports.getTrainingOfficeById = (req, res) => {
 };
 
 exports.deleteTrainingOfficeById = (req, res) => {
-  trainingOfficeModel
+  trainingOffice
     .findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(200).json({
@@ -106,7 +124,7 @@ exports.deleteTrainingOfficeById = (req, res) => {
 };
 
 exports.getAllReviews = (req, res) => {
-  trainingOfficeModel
+  trainingOffice
     .findById(req.params.id)
     .then((trainingOffice) => {
       res.status(200).json({
@@ -124,7 +142,7 @@ exports.getAllReviews = (req, res) => {
 
 exports.postReview = async (req, res) => {
   try {
-    const trainingOffice = await trainingOfficeModel.findById(req.params.id);
+    const trainingOffice = await trainingOffice.findById(req.params.id);
     if (!trainingOffice) {
       throw new Error("this user doesn't exist");
     }

@@ -1,4 +1,4 @@
-const companyModel = require("../models/company.model");
+const company = require("../models/company.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
@@ -23,7 +23,7 @@ exports.updateCompany = (req, res) => {
     req.body.profileImg = req.file.filename;
   }
 
-  companyModel
+  company
     .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
     .then((company) => {
       res.status(200).json({
@@ -39,7 +39,7 @@ exports.updateCompany = (req, res) => {
     });
 };
 
-exports.getAllCompanies = (req, res) => {
+exports.getAllCompanies = async (req, res) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -53,10 +53,28 @@ exports.getAllCompanies = (req, res) => {
   const regex = new RegExp(req.query.name, "i"); // i for case insensitive
   queryObj["name"] = { $regex: regex };
   const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
-  companyModel
+
+  //pagination
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  if (req.query.page) {
+    const numOfCompanies = await company.countDocuments();
+    if (skip > numOfCompanies) {
+      return res.status(200).json({
+        status: "failed",
+        message: "we don't have enough data",
+      });
+    }
+  }
+
+  company
     .find(queryObj)
     .select("profileImg name rating numberOfReviews field city createdAt")
     .sort(querySort)
+    .skip(skip)
+    .limit(limit)
     .then((companies) => {
       res.status(200).json({
         status: "success",
@@ -73,7 +91,7 @@ exports.getAllCompanies = (req, res) => {
 };
 
 exports.getCompanyById = (req, res) => {
-  companyModel
+  company
     .findById(req.params.id)
     .then((company) => {
       return res.status(200).json({
@@ -90,7 +108,7 @@ exports.getCompanyById = (req, res) => {
 };
 
 exports.deleteCompanyById = (req, res) => {
-  companyModel
+  company
     .findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(200).json({
@@ -107,7 +125,7 @@ exports.deleteCompanyById = (req, res) => {
 };
 
 exports.getAllReviews = (req, res) => {
-  companyModel
+  company
     .findById(req.params.id)
     .then((company) => {
       res.status(200).json({
@@ -125,7 +143,7 @@ exports.getAllReviews = (req, res) => {
 
 exports.postReview = async (req, res) => {
   try {
-    const company = await companyModel.findById(req.params.id);
+    const company = await company.findById(req.params.id);
 
     if (!company) {
       throw new Error("this user doesn't exist");

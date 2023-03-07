@@ -2,7 +2,7 @@ const offers = require("../models/offer.model");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
 
-exports.getAllOffers = (req, res) => {
+exports.getAllOffers = async (req, res) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -18,12 +18,30 @@ exports.getAllOffers = (req, res) => {
   queryObj["employerName"] = { $regex: employerNameregex };
   queryObj["title"] = { $regex: titleRegex };
   const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
+
+  //pagination
+  const page = req.query.page * 1 || 1;
+  const limit = req.query.limit * 1 || 10;
+  const skip = (page - 1) * limit;
+
+  if (req.query.page) {
+    const numOfTrainingOffices = await offers.countDocuments();
+    if (skip > numOfTrainingOffices) {
+      return res.status(200).json({
+        status: "failed",
+        message: "we don't have enough data",
+      });
+    }
+  }
+
   offers
     .find(queryObj)
     .select(
       "title numberOfApplicants city employerImage employerId employerType employerName"
     )
     .sort(querySort)
+    .skip(skip)
+    .limit(limit)
     .then((offers) => {
       res.status(200).json({
         status: "success",
