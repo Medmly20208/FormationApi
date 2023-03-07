@@ -59,10 +59,10 @@ exports.CreateConsultant = (req, res) => {
 };
 
 exports.updateConsultant = (req, res) => {
-  if (req.files["profileImg"][0]) {
+  if (req.files?.profileImg[0]) {
     req.body.profileImg = req.files["profileImg"][0].filename;
   }
-  if (req.files["cv"][0]) {
+  if (req.files?.cv[0]) {
     req.body.cv = req.files["cv"][0].filename;
   }
 
@@ -95,9 +95,11 @@ exports.getAllConsultants = (req, res) => {
   queryObj = JSON.parse(queryString);
   const regex = new RegExp(req.query.name, "i"); // i for case insensitive
   queryObj["name"] = { $regex: regex };
+  const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
   consultant
     .find(queryObj)
-    .select("profileImg name rating numberOfReviews field")
+    .select("profileImg name rating city field createdAt")
+    .sort(querySort)
     .then((consultants) => {
       res.status(200).json({
         status: "success",

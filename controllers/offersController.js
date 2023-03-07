@@ -17,12 +17,13 @@ exports.getAllOffers = (req, res) => {
   const titleRegex = new RegExp(req.query.title, "i"); // i for case insensitive
   queryObj["employerName"] = { $regex: employerNameregex };
   queryObj["title"] = { $regex: titleRegex };
-
+  const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
   offers
     .find(queryObj)
     .select(
-      "title numberOfApplicants city employerImage employerId employerType"
+      "title numberOfApplicants city employerImage employerId employerType employerName"
     )
+    .sort(querySort)
     .then((offers) => {
       res.status(200).json({
         status: "success",

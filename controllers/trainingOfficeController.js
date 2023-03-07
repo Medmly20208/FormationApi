@@ -52,9 +52,11 @@ exports.getAllTrainingOffices = (req, res) => {
   queryObj = JSON.parse(queryString);
   const regex = new RegExp(req.query.name, "i"); // i for case insensitive
   queryObj["name"] = { $regex: regex };
+  const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
   trainingOfficeModel
     .find(queryObj)
     .select("profileImg name rating numberOfReviews city")
+    .sort(querySort)
     .then((trainingOffices) => {
       res.status(200).json({
         status: "success",

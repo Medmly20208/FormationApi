@@ -52,9 +52,11 @@ exports.getAllCompanies = (req, res) => {
   queryObj = JSON.parse(queryString);
   const regex = new RegExp(req.query.name, "i"); // i for case insensitive
   queryObj["name"] = { $regex: regex };
+  const querySort = !req.query.sort ? "-createdAt" : req.query.sort;
   companyModel
     .find(queryObj)
-    .select("profileImg name rating numberOfReviews field")
+    .select("profileImg name rating numberOfReviews field city createdAt")
+    .sort(querySort)
     .then((companies) => {
       res.status(200).json({
         status: "success",
