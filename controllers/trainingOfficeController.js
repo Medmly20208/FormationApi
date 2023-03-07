@@ -39,6 +39,14 @@ exports.updateTrainingOffice = (req, res) => {
     });
 };
 
+exports.aliasTopFiveTrainingOffices = (req, res, next) => {
+  req.query.sort = "-rating";
+  req.query.page = "1";
+  req.query.limit = "5";
+
+  next();
+};
+
 exports.getAllTrainingOffices = async (req, res) => {
   let queryObj = { ...req.query };
 

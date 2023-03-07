@@ -3,7 +3,12 @@ const trainingOfficeControllers = require("../controllers/trainingOfficeControll
 const authController = require("../controllers/authController");
 const Router = express.Router();
 
-// public route methods
+Router.get(
+  "/top-5-trainingOffices",
+  trainingOfficeControllers.aliasTopFiveTrainingOffices,
+  trainingOfficeControllers.getAllTrainingOffices
+);
+
 Router.get("/", trainingOfficeControllers.getAllTrainingOffices);
 Router.get(
   "/:id",

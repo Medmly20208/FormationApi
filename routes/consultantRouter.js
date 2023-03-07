@@ -3,7 +3,12 @@ const consultantController = require("../controllers/consultantController");
 const authController = require("../controllers/authController");
 const Router = express.Router();
 
-// public route methods
+Router.get(
+  "/top-5-consultants",
+  consultantController.aliasTopFiveConsultants,
+  consultantController.getAllConsultants
+);
+
 Router.get("/", consultantController.getAllConsultants);
 Router.get(
   "/:id",
@@ -11,7 +16,6 @@ Router.get(
   consultantController.getConsultantById
 );
 
-//private route methods
 Router.patch(
   "/:id",
   consultantController.uploadFiles,

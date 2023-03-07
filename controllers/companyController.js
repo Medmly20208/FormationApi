@@ -39,6 +39,14 @@ exports.updateCompany = (req, res) => {
     });
 };
 
+exports.aliasTopFiveCompanies = (req, res, next) => {
+  req.query.sort = "-rating";
+  req.query.page = "1";
+  req.query.limit = "5";
+
+  next();
+};
+
 exports.getAllCompanies = async (req, res) => {
   let queryObj = { ...req.query };
 

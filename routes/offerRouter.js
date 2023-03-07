@@ -4,6 +4,13 @@ const authController = require("../controllers/authController");
 const Router = express.Router();
 
 Router.post("/", offersController.CreateOffer);
+
+Router.get(
+  "/newOffers",
+  offersController.aliasNewOffers,
+  offersController.getAllOffers
+);
+
 Router.get("/", offersController.getAllOffers);
 Router.get(
   "/:id",

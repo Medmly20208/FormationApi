@@ -82,6 +82,14 @@ exports.updateConsultant = (req, res) => {
     });
 };
 
+exports.aliasTopFiveConsultants = (req, res, next) => {
+  req.query.sort = "-rating";
+  req.query.page = "1";
+  req.query.limit = "5";
+
+  next();
+};
+
 exports.getAllConsultants = async (req, res) => {
   let queryObj = { ...req.query };
 

@@ -2,6 +2,14 @@ const offers = require("../models/offer.model");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
 
+exports.aliasNewOffers = (req, res, next) => {
+  req.query.sort = "-createdAt";
+  req.query.page = "1";
+  req.query.limit = "5";
+
+  next();
+};
+
 exports.getAllOffers = async (req, res) => {
   let queryObj = { ...req.query };
 
