@@ -3,6 +3,8 @@ const companyController = require("../controllers/companyController");
 const authController = require("../controllers/authController");
 const Router = express.Router();
 
+Router.get("/companiesStats", companyController.getCompanyStats);
+
 Router.get(
   "/top-5-companies",
   companyController.aliasTopFiveCompanies,

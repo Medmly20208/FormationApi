@@ -16,6 +16,30 @@ const storage = multer.diskStorage({
   },
 });
 
+exports.getCompanyStats = (req, res, next) => {
+  company
+    .aggregate([
+      {
+        $group: {
+          _id: "$rating",
+          numCompanies: { $sum: 1 },
+        },
+      },
+    ])
+    .then((result) => {
+      res.status(200).json({
+        status: "success",
+        data: result,
+      });
+    })
+    .catch((err) => {
+      res.status(400).json({
+        status: "failed",
+        data: err.message,
+      });
+    });
+};
+
 exports.upload = multer({ storage }).single("profileImg");
 
 exports.updateCompany = (req, res) => {
@@ -66,16 +90,6 @@ exports.getAllCompanies = async (req, res) => {
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
-
-  if (req.query.page) {
-    const numOfCompanies = await company.countDocuments();
-    if (skip > numOfCompanies) {
-      return res.status(200).json({
-        status: "failed",
-        message: "we don't have enough data",
-      });
-    }
-  }
 
   company
     .find(queryObj)
