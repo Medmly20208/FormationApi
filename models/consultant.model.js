@@ -1,12 +1,6 @@
 const mongoose = require("mongoose");
 
-const Reviews = mongoose.Schema({
-  reviewerId: String,
-  reviewerType: String,
-  reviewerField: String,
-  comment: String,
-  rating: Number,
-});
+const Reviews = require("../schemas/review");
 
 const consultant = mongoose.Schema(
   {

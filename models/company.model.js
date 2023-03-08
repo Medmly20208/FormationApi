@@ -1,12 +1,5 @@
 const mongoose = require("mongoose");
-
-const Reviews = mongoose.Schema({
-  reviewerId: String,
-  reviewerType: String,
-  reviewerField: String,
-  comment: String,
-  rating: Number,
-});
+const Reviews = require("../schemas/review");
 
 const company = mongoose.Schema(
   {
@@ -65,9 +58,11 @@ const company = mongoose.Schema(
       default: [],
     },
   },
-  { timestamps: true }
+
+  {
+    timestamps: true,
+  }
 );
+const companyModal = mongoose.model("company", company);
 
-const trainingOfficeModal = mongoose.model("company", company);
-
-module.exports = trainingOfficeModal;
+module.exports = companyModal;

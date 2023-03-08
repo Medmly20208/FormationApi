@@ -93,7 +93,9 @@ exports.getAllCompanies = async (req, res) => {
 
   company
     .find(queryObj)
-    .select("profileImg name rating numberOfReviews field city createdAt")
+    .select(
+      "profileImg name rating numberOfReviews field city createdAt fullname"
+    )
     .sort(querySort)
     .skip(skip)
     .limit(limit)
@@ -165,23 +167,23 @@ exports.getAllReviews = (req, res) => {
 
 exports.postReview = async (req, res) => {
   try {
-    const company = await company.findById(req.params.id);
+    const companyUser = await company.findById(req.params.id);
 
-    if (!company) {
+    if (!companyUser) {
       throw new Error("this user doesn't exist");
     }
 
-    company.reviews.push(req.body.review);
-    company.numberOfReviews = company.numberOfReviews + 1;
-    company.totalRating = company.totalRating + req.body.review.rating;
+    companyUser.reviews.push(req.body.review);
+    companyUser.numberOfReviews = companyUser.numberOfReviews + 1;
+    companyUser.totalRating = companyUser.totalRating + req.body.review.rating;
 
-    company.rating = company.totalRating / company.numberOfReviews;
+    companyUser.rating = companyUser.totalRating / companyUser.numberOfReviews;
 
-    company.save();
+    await companyUser.save({ runValidators: true });
 
     res.status(200).json({
       status: "success",
-      data: company,
+      data: companyUser,
     });
   } catch (err) {
     res.status(400).json({

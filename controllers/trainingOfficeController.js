@@ -150,23 +150,23 @@ exports.getAllReviews = (req, res) => {
 
 exports.postReview = async (req, res) => {
   try {
-    const trainingOffice = await trainingOffice.findById(req.params.id);
-    if (!trainingOffice) {
+    const trainingOfficeUser = await trainingOffice.findById(req.params.id);
+    if (!trainingOfficeUser) {
       throw new Error("this user doesn't exist");
     }
-    trainingOffice.reviews.push(req.body.review);
-    trainingOffice.numberOfReviews = trainingOffice.numberOfReviews + 1;
-    trainingOffice.totalRating =
-      trainingOffice.totalRating + req.body.review.rating;
+    trainingOfficeUser.reviews.push(req.body.review);
+    trainingOfficeUser.numberOfReviews = trainingOfficeUser.numberOfReviews + 1;
+    trainingOfficeUser.totalRating =
+      trainingOfficeUser.totalRating + req.body.review.rating;
 
-    trainingOffice.rating =
-      trainingOffice.totalRating / trainingOffice.numberOfReviews;
+    trainingOfficeUser.rating =
+      trainingOfficeUser.totalRating / trainingOfficeUser.numberOfReviews;
 
-    trainingOffice.save();
+    await trainingOfficeUser.save();
 
     res.status(200).json({
       status: "success",
-      data: trainingOffice,
+      data: trainingOfficeUser,
     });
   } catch (err) {
     res.status(400).json({

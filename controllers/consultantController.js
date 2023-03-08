@@ -207,7 +207,7 @@ exports.postReview = async (req, res) => {
     consultantUser.rating =
       consultantUser.totalRating / consultantUser.numberOfReviews;
 
-    consultantUser.save();
+    await consultantUser.save();
 
     res.status(200).json({
       status: "success",
