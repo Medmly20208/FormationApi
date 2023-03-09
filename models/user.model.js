@@ -20,7 +20,10 @@ const user = mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      enum: ["trainingOffice", "company", "consultant"],
+      enum: {
+        values: ["trainingOffice", "company", "consultant"],
+        message: "type has to be either company,consultant or trainingOffice",
+      },
     },
     active: {
       type: Boolean,

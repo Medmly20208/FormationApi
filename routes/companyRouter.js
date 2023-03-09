@@ -14,7 +14,6 @@ Router.get(
 Router.get("/", companyController.getAllCompanies);
 Router.get(
   "/:id",
-
   authController.checkIfUserAuthenticated,
   companyController.getCompanyById
 );

@@ -15,6 +15,7 @@ Router.get(
   authController.checkIfUserAuthenticated,
   consultantController.getConsultantById
 );
+Router.delete("/:id", consultantController.deleteConsultantById);
 
 Router.patch(
   "/:id",
@@ -22,7 +23,6 @@ Router.patch(
   consultantController.excludeUnaouthorizedFields,
   consultantController.updateConsultant
 );
-Router.delete("/:id", consultantController.deleteConsultantById);
 
 //Reviews controllers
 Router.get("/:id/reviews", consultantController.getAllReviews);

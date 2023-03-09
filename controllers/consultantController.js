@@ -2,6 +2,8 @@ const consultant = require("../models/consultant.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
+const AppError = require("../utils/AppError");
+const catchAsync = require("../utils/catchAsync.js");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -41,24 +43,16 @@ exports.uploadFiles = multer({
     maxCount: 1,
   },
 ]);
-exports.CreateConsultant = (req, res) => {
-  consultant
-    .create({ ...req.body })
-    .then((consultant) => {
-      res.status(200).json({
-        status: "success",
-        data: consultant,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.CreateConsultant = catchAsync(async (req, res) => {
+  const consultants = await consultant.create({ ...req.body });
 
-exports.updateConsultant = (req, res) => {
+  res.status(200).json({
+    status: "success",
+    data: consultants,
+  });
+});
+
+exports.updateConsultant = catchAsync(async (req, res, next) => {
   if (req.files?.profileImg[0]) {
     req.body.profileImg = req.files["profileImg"][0].filename;
   }
@@ -66,21 +60,21 @@ exports.updateConsultant = (req, res) => {
     req.body.cv = req.files["cv"][0].filename;
   }
 
-  consultant
-    .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
-    .then((consultant) => {
-      res.status(200).json({
-        status: "success",
-        data: consultant,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  const newConsultant = await consultant.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body },
+    { new: true }
+  );
+
+  if (!newConsultant) {
+    return next(new AppError("this consultant doesn't exist", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: newConsultant,
+  });
+});
 
 exports.aliasTopFiveConsultants = (req, res, next) => {
   req.query.sort = "-rating";
@@ -90,7 +84,7 @@ exports.aliasTopFiveConsultants = (req, res, next) => {
   next();
 };
 
-exports.getAllConsultants = async (req, res) => {
+exports.getAllConsultants = catchAsync(async (req, res, next) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -115,111 +109,78 @@ exports.getAllConsultants = async (req, res) => {
   if (req.query.page) {
     const numOfConsultants = await consultant.countDocuments();
     if (skip > numOfConsultants) {
-      return res.status(200).json({
-        status: "failed",
-        message: "we don't have enough data",
-      });
+      throw new Error("we don't have enough data");
     }
   }
 
-  consultant
+  const consultants = await consultant
     .find(queryObj)
     .select("profileImg name rating city field createdAt")
     .sort(querySort)
     .skip(skip)
-    .limit(limit)
-    .then((consultants) => {
-      res.status(200).json({
-        status: "success",
-        results: consultants.length,
-        data: consultants,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-      });
-    });
-};
+    .limit(limit);
 
-exports.getConsultantById = (req, res) => {
-  consultant
-    .findById(req.params.id)
-    .then((consultant) => {
-      res.status(200).json({
-        status: "success",
-        data: consultant,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  res.status(200).json({
+    status: "success",
+    data: consultants,
+  });
+});
 
-exports.deleteConsultantById = (req, res) => {
-  consultant
-    .findByIdAndDelete(req.params.id)
-    .then(() => {
-      res.status(200).json({
-        status: "success",
-        data: null,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.getConsultantById = catchAsync(async (req, res, next) => {
+  const consultantUser = await consultant.findById(req.params.id);
 
-exports.getAllReviews = (req, res) => {
-  consultant
-    .findById(req.params.id)
-    .then((consultant) => {
-      res.status(200).json({
-        status: "success",
-        data: consultant === null ? [] : consultant.reviews,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
-
-exports.postReview = async (req, res) => {
-  try {
-    const consultantUser = await consultant.findById(req.params.id);
-    if (!consultantUser) {
-      throw new Error("this user doesn't exist");
-    }
-    consultantUser.reviews.push(req.body.review);
-    consultantUser.numberOfReviews = consultantUser.numberOfReviews + 1;
-    consultantUser.totalRating =
-      consultantUser.totalRating + req.body.review.rating;
-
-    consultantUser.rating =
-      consultantUser.totalRating / consultantUser.numberOfReviews;
-
-    await consultantUser.save();
-
-    res.status(200).json({
-      status: "success",
-      data: consultantUser,
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
+  if (!consultantUser) {
+    return next(new AppError("this consultant doesn't exist", 404));
   }
-};
+
+  res.status(200).json({
+    status: "success",
+    data: consultantUser,
+  });
+});
+
+exports.deleteConsultantById = catchAsync(async (req, res, next) => {
+  const deletedConsultant = await consultant.findByIdAndDelete(req.params.id);
+
+  if (!deletedConsultant) {
+    return next(new AppError("this consultant doesn't exist", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: null,
+  });
+});
+
+exports.getAllReviews = catchAsync(async (req, res) => {
+  const reviews = await consultant.findById(req.params.id);
+
+  res.status(200).json({
+    status: "success",
+    data: consultant === null ? [] : consultant.reviews,
+  });
+});
+
+exports.postReview = catchAsync(async (req, res) => {
+  const consultantUser = await consultant.findById(req.params.id);
+  if (!consultantUser) {
+    throw new Error("this user doesn't exist");
+  }
+  consultantUser.reviews.push(req.body.review);
+  consultantUser.numberOfReviews = consultantUser.numberOfReviews + 1;
+  consultantUser.totalRating =
+    consultantUser.totalRating + req.body.review.rating;
+
+  consultantUser.rating =
+    consultantUser.totalRating / consultantUser.numberOfReviews;
+
+  await consultantUser.save();
+
+  res.status(200).json({
+    status: "success",
+    data: consultantUser,
+  });
+});
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
   req.body = excludeFromObject(

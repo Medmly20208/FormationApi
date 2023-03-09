@@ -10,6 +10,9 @@ const companyRouter = require("./routes/companyRouter");
 const offerRouter = require("./routes/offerRouter");
 const applicationRouter = require("./routes/applicationRouter");
 
+const AppError = require("./utils/AppError");
+const globalErrorHandler = require("./controllers/errorController");
+
 const app = express();
 
 const limiter = rateLimit({
@@ -30,5 +33,13 @@ app.use("/api/v1/trainingoffices", trainingOfficeRouter);
 app.use("/api/v1/companies", companyRouter);
 app.use("/api/v1/offers", offerRouter);
 app.use("/api/v1/applications", applicationRouter);
+
+app.all("*", (req, res, next) => {
+  next(
+    new AppError(`this route ${req.originalUrl} doesn't exist on server`, 404)
+  );
+});
+
+app.use(globalErrorHandler);
 
 module.exports = app;

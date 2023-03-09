@@ -4,8 +4,10 @@
   "description": "\"# FormationApi\"",
   "main": "server.js",
   "scripts": {
+    "start": "nodemon start",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon start"
+    "start:prod": "set NODE_ENV=production &&  nodemon start"
+   
   },
   "repository": {
     "type": "git",
