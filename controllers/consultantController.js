@@ -145,15 +145,6 @@ exports.deleteConsultantById = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllReviews = catchAsync(async (req, res) => {
-  const reviews = await consultant.findById(req.params.id);
-
-  res.status(200).json({
-    status: "success",
-    data: consultant === null ? [] : consultant.reviews,
-  });
-});
-
 exports.postReview = catchAsync(async (req, res, next) => {
   const consultantUser = await consultant.findById(req.params.id);
   console.log(consultantUser);

@@ -15,7 +15,12 @@ Router.get(
   authController.checkIfUserAuthenticated,
   consultantController.getConsultantById
 );
-Router.delete("/:id", consultantController.deleteConsultantById);
+Router.delete(
+  "/:id",
+  authController.checkIfUserAuthenticated,
+  authController.checkIfUserAuthorized,
+  consultantController.deleteConsultantById
+);
 
 Router.patch(
   "/:id",
@@ -27,7 +32,10 @@ Router.patch(
 );
 
 //Reviews controllers
-Router.get("/:id/reviews", consultantController.getAllReviews);
-Router.post("/:id/reviews", consultantController.postReview);
+Router.post(
+  "/:id/reviews",
+  authController.checkIfUserAuthenticated,
+  consultantController.postReview
+);
 
 module.exports = Router;

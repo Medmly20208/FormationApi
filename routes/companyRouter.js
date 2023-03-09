@@ -31,11 +31,15 @@ Router.patch(
 Router.delete(
   "/:id",
   authController.checkIfUserAuthenticated,
+  authController.checkIfUserAuthorized,
   companyController.deleteCompanyById
 );
 
 //Reviews controllers
-Router.get("/:id/reviews", companyController.getAllReviews);
-Router.post("/:id/reviews", companyController.postReview);
+Router.post(
+  "/:id/reviews",
+  authController.checkIfUserAuthenticated,
+  companyController.postReview
+);
 
 module.exports = Router;

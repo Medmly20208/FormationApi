@@ -123,16 +123,6 @@ exports.deleteCompanyById = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllReviews = catchAsync((req, res, next) => {
-  const Company = company
-    .findById(req.params.id)
-    .res.status(200)
-    .json({
-      status: "success",
-      data: Company === null ? [] : Company.reviews,
-    });
-});
-
 exports.postReview = catchAsync(async (req, res, next) => {
   const companyUser = await company.findById(req.params.id);
 

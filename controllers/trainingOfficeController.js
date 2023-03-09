@@ -102,15 +102,6 @@ exports.deleteTrainingOfficeById = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllReviews = catchAsync(async (req, res, next) => {
-  const trainingOffices = await trainingOffice.findById(req.params.id);
-
-  res.status(200).json({
-    status: "success",
-    data: trainingOffices === null ? [] : trainingOffices.reviews,
-  });
-});
-
 exports.postReview = catchAsync(async (req, res, next) => {
   const trainingOfficeUser = await trainingOffice.findById(req.params.id);
   if (!trainingOfficeUser) {

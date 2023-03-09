@@ -26,10 +26,18 @@ Router.patch(
   authController.checkIfUserAuthorized,
   trainingOfficeControllers.updateTrainingOffice
 );
-Router.delete("/:id", trainingOfficeControllers.deleteTrainingOfficeById);
+Router.delete(
+  "/:id",
+  authController.checkIfUserAuthenticated,
+  authController.checkIfUserAuthorized,
+  trainingOfficeControllers.deleteTrainingOfficeById
+);
 
 //Reviews controllers
-Router.get("/:id/reviews", trainingOfficeControllers.getAllReviews);
-Router.post("/:id/reviews", trainingOfficeControllers.postReview);
+Router.post(
+  "/:id/reviews",
+  authController.checkIfUserAuthenticated,
+  trainingOfficeControllers.postReview
+);
 
 module.exports = Router;

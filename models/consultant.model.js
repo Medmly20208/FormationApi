@@ -8,10 +8,7 @@ const consultant = mongoose.Schema(
       type: String,
       required: true,
     },
-    /*consultantId: {
-      type: String,
-      required: true,
-    },*/
+
     name: {
       type: String,
       trim: true,
