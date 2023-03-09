@@ -106,13 +106,6 @@ exports.getAllConsultants = catchAsync(async (req, res, next) => {
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
-  if (req.query.page) {
-    const numOfConsultants = await consultant.countDocuments();
-    if (skip > numOfConsultants) {
-      throw new Error("we don't have enough data");
-    }
-  }
-
   const consultants = await consultant
     .find(queryObj)
     .select("profileImg name rating city field createdAt")
@@ -130,7 +123,7 @@ exports.getConsultantById = catchAsync(async (req, res, next) => {
   const consultantUser = await consultant.findById(req.params.id);
 
   if (!consultantUser) {
-    return next(new AppError("this consultant doesn't exist", 404));
+    return next(new AppError("this user doesn't exist", 404));
   }
 
   res.status(200).json({
@@ -161,10 +154,10 @@ exports.getAllReviews = catchAsync(async (req, res) => {
   });
 });
 
-exports.postReview = catchAsync(async (req, res) => {
+exports.postReview = catchAsync(async (req, res, next) => {
   const consultantUser = await consultant.findById(req.params.id);
   if (!consultantUser) {
-    throw new Error("this user doesn't exist");
+    return next(new AppError("this user doesn't exist", 404));
   }
   consultantUser.reviews.push(req.body.review);
   consultantUser.numberOfReviews = consultantUser.numberOfReviews + 1;

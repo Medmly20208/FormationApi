@@ -2,6 +2,8 @@ const trainingOffice = require("../models/trainingOffice.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/AppError");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -18,26 +20,25 @@ const storage = multer.diskStorage({
 
 exports.upload = multer({ storage }).single("profileImg");
 
-exports.updateTrainingOffice = (req, res) => {
-  console.log(req.body);
+exports.updateTrainingOffice = catchAsync(async (req, res, next) => {
   if (req.body.profileImg) {
     req.body.profileImg = req.file.filename;
   }
-  trainingOffice
-    .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
-    .then((trainingOffice) => {
-      res.status(200).json({
-        status: "success",
-        data: trainingOffice,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  const TrainingOffice = await trainingOffice.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body },
+    { new: true }
+  );
+
+  if (!TrainingOffice) {
+    return next(new AppError("this user doesn't exist", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: TrainingOffice,
+  });
+});
 
 exports.aliasTopFiveTrainingOffices = (req, res, next) => {
   req.query.sort = "-rating";
@@ -47,7 +48,7 @@ exports.aliasTopFiveTrainingOffices = (req, res, next) => {
   next();
 };
 
-exports.getAllTrainingOffices = async (req, res) => {
+exports.getAllTrainingOffices = catchAsync(async (req, res, next) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -67,114 +68,69 @@ exports.getAllTrainingOffices = async (req, res) => {
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
-  if (req.query.page) {
-    const numOfTrainingOffices = await trainingOffice.countDocuments();
-    if (skip > numOfTrainingOffices) {
-      return res.status(200).json({
-        status: "failed",
-        message: "we don't have enough data",
-      });
-    }
-  }
-
-  trainingOffice
+  const trainingOffices = await trainingOffice
     .find(queryObj)
     .select("profileImg name rating numberOfReviews city")
     .sort(querySort)
     .skip(skip)
-    .limit(limit)
-    .then((trainingOffices) => {
-      res.status(200).json({
-        status: "success",
-        results: trainingOffices.length,
-        data: trainingOffices,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-      });
-    });
-};
+    .limit(limit);
 
-exports.getTrainingOfficeById = (req, res) => {
-  trainingOffice
-    .findById(req.params.id)
-    .then((trainingOffice) => {
-      res.status(200).json({
-        status: "success",
-        data: trainingOffice,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  res.status(200).json({
+    status: "success",
+    results: trainingOffices.length,
+    data: trainingOffices,
+  });
+});
 
-exports.deleteTrainingOfficeById = (req, res) => {
-  trainingOffice
-    .findByIdAndDelete(req.params.id)
-    .then(() => {
-      res.status(200).json({
-        status: "success",
-        data: null,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.getTrainingOfficeById = catchAsync(async (req, res, next) => {
+  const trainingOffices = await trainingOffice.findById(req.params.id);
 
-exports.getAllReviews = (req, res) => {
-  trainingOffice
-    .findById(req.params.id)
-    .then((trainingOffice) => {
-      res.status(200).json({
-        status: "success",
-        data: trainingOffice === null ? [] : trainingOffice.reviews,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
-
-exports.postReview = async (req, res) => {
-  try {
-    const trainingOfficeUser = await trainingOffice.findById(req.params.id);
-    if (!trainingOfficeUser) {
-      throw new Error("this user doesn't exist");
-    }
-    trainingOfficeUser.reviews.push(req.body.review);
-    trainingOfficeUser.numberOfReviews = trainingOfficeUser.numberOfReviews + 1;
-    trainingOfficeUser.totalRating =
-      trainingOfficeUser.totalRating + req.body.review.rating;
-
-    trainingOfficeUser.rating =
-      trainingOfficeUser.totalRating / trainingOfficeUser.numberOfReviews;
-
-    await trainingOfficeUser.save();
-
-    res.status(200).json({
-      status: "success",
-      data: trainingOfficeUser,
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
+  if (!trainingOffices) {
+    return next(new AppError("this user doesn't exist", 404));
   }
-};
+
+  res.status(200).json({
+    status: "success",
+    data: trainingOffices,
+  });
+});
+
+exports.deleteTrainingOfficeById = catchAsync(async (req, res, next) => {
+  await trainingOffice.findByIdAndDelete(req.params.id).res.status(200).json({
+    status: "success",
+    data: null,
+  });
+});
+
+exports.getAllReviews = catchAsync(async (req, res, next) => {
+  const trainingOffices = await trainingOffice.findById(req.params.id);
+
+  res.status(200).json({
+    status: "success",
+    data: trainingOffices === null ? [] : trainingOffices.reviews,
+  });
+});
+
+exports.postReview = catchAsync(async (req, res, next) => {
+  const trainingOfficeUser = await trainingOffice.findById(req.params.id);
+  if (!trainingOfficeUser) {
+    return next(new AppError("this user doesn't exist"));
+  }
+  trainingOfficeUser.reviews.push(req.body.review);
+  trainingOfficeUser.numberOfReviews = trainingOfficeUser.numberOfReviews + 1;
+  trainingOfficeUser.totalRating =
+    trainingOfficeUser.totalRating + req.body.review.rating;
+
+  trainingOfficeUser.rating =
+    trainingOfficeUser.totalRating / trainingOfficeUser.numberOfReviews;
+
+  await trainingOfficeUser.save();
+
+  res.status(200).json({
+    status: "success",
+    data: trainingOfficeUser,
+  });
+});
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
   req.body = excludeFromObject(

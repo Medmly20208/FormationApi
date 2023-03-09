@@ -1,5 +1,7 @@
 const offers = require("../models/offer.model");
 const excludeFromObject = require("../helpers/excludeFromObjects");
+const AppError = require("../utils/AppError");
+const catchAsync = require("../utils/catchAsync");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
 
 exports.aliasNewOffers = (req, res, next) => {
@@ -10,7 +12,7 @@ exports.aliasNewOffers = (req, res, next) => {
   next();
 };
 
-exports.getAllOffers = async (req, res) => {
+exports.getAllOffers = catchAsync(async (req, res, next) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -32,123 +34,70 @@ exports.getAllOffers = async (req, res) => {
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
-  if (req.query.page) {
-    const numOfTrainingOffices = await offers.countDocuments();
-    if (skip > numOfTrainingOffices) {
-      return res.status(200).json({
-        status: "failed",
-        message: "we don't have enough data",
-      });
-    }
-  }
-
-  offers
+  const Offers = await offers
     .find(queryObj)
     .select(
       "title numberOfApplicants city employerImage employerId employerType employerName"
     )
     .sort(querySort)
     .skip(skip)
-    .limit(limit)
-    .then((offers) => {
-      res.status(200).json({
-        status: "success",
-        results: offers.length,
-        data: offers,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+    .limit(limit);
 
-exports.CreateOffer = (req, res) => {
-  offers
-    .create({ ...req.body })
-    .then((offer) => {
-      res.status(200).json({
-        status: "success",
-        data: offer,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  res.status(200).json({
+    status: "success",
+    results: Offers.length,
+    data: Offers,
+  });
+});
 
-exports.getOfferById = (req, res) => {
-  offers
-    .findById(req.params.id)
-    .then((offer) => {
-      res.status(200).json({
-        status: "success",
-        data: offer,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.CreateOffer = catchAsync(async (req, res, next) => {
+  const offer = await offers.create({ ...req.body });
 
-exports.updateOffer = (req, res) => {
-  offers
-    .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
-    .then((offer) => {
-      res.status(200).json({
-        status: "success",
-        data: offer,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  res.status(200).json({
+    status: "success",
+    data: offer,
+  });
+});
 
-exports.getOffersByEmployerId = (req, res) => {
-  offers
-    .findById(req.params.EmployerId)
-    .then((consultant) => {
-      res.status(200).json({
-        status: "success",
-        data: consultant,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.getOfferById = catchAsync(async (req, res, next) => {
+  const offer = await offers.findById(req.params.id);
 
-exports.deleteOffertById = (req, res) => {
-  offers
-    .findByIdAndDelete(req.params.id)
-    .then(() => {
-      res.status(200).json({
-        status: "success",
-        data: null,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
+  res.status(200).json({
+    status: "success",
+    data: offer,
+  });
+});
+
+exports.updateOffer = catchAsync(async (req, res, next) => {
+  const Offer = await offers.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: Offer,
+  });
+});
+
+exports.getOffersByEmployerId = catchAsync(async (req, res, next) => {
+  const Offers = await offers.findById(req.params.EmployerId);
+
+  res.status(200).json({
+    status: "success",
+    data: Offers,
+  });
+});
+
+exports.deleteOffertById = catchAsync(async (req, res, next) => {
+  await offers.findByIdAndDelete(req.params.id).then(() => {
+    res.status(200).json({
+      status: "success",
+      data: null,
     });
-};
+  });
+});
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
   req.body = excludeFromObject(

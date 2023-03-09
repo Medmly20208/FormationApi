@@ -2,23 +2,18 @@ const applicationModel = require("../models/application.model");
 const offerModel = require("../models/offer.model");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
+const catchAsync = require("../utils/catchAsync");
 
-exports.getApplicationByApplicantId = (req, res) => {
-  applicationModel
-    .find({ applicantId: req.params.id })
-    .then((applications) => {
-      res.status(200).json({
-        status: "success",
-        data: applications,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.getApplicationByApplicantId = catchAsync(async (req, res, next) => {
+  const applications = await applicationModel.find({
+    applicantId: req.params.id,
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: applications,
+  });
+});
 
 exports.postApplication = (req, res) => {
   applicationModel
@@ -64,26 +59,18 @@ exports.deleteApplicationById = (req, res) => {
     });
 };
 
-exports.updateApplication = (req, res) => {
-  applicationModel
-    .findByIdAndUpdate(
-      req.params.id,
-      { ...req.body.application },
-      { new: true }
-    )
-    .then((application) => {
-      res.status(200).json({
-        status: "success",
-        data: application,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.updateApplication = catchAsync(async (req, res, next) => {
+  const application = await applicationModel.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body.application },
+    { new: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: application,
+  });
+});
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
   req.body.application = excludeFromObject(

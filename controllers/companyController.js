@@ -2,6 +2,8 @@ const company = require("../models/company.model");
 const multer = require("multer");
 const excludeFromObject = require("../helpers/excludeFromObjects");
 const UnauthorizedFields = require("../config/UnauthorizedFields");
+const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/AppError");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -16,52 +18,44 @@ const storage = multer.diskStorage({
   },
 });
 
-exports.getCompanyStats = (req, res, next) => {
-  company
-    .aggregate([
-      {
-        $group: {
-          _id: "$rating",
-          numCompanies: { $sum: 1 },
-        },
+exports.getCompanyStats = catchAsync(async (req, res, next) => {
+  const result = await company.aggregate([
+    {
+      $group: {
+        _id: "$rating",
+        numCompanies: { $sum: 1 },
       },
-    ])
-    .then((result) => {
-      res.status(200).json({
-        status: "success",
-        data: result,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        data: err.message,
-      });
-    });
-};
+    },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});
 
 exports.upload = multer({ storage }).single("profileImg");
 
-exports.updateCompany = (req, res) => {
+exports.updateCompany = catchAsync(async (req, res, next) => {
   if (req.file) {
     req.body.profileImg = req.file.filename;
   }
 
-  company
-    .findByIdAndUpdate(req.params.id, { ...req.body }, { new: true })
-    .then((company) => {
-      res.status(200).json({
-        status: "success",
-        data: company,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  const Company = await company.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body },
+    { new: true }
+  );
+
+  if (!Company) {
+    return next(new AppError("this user doesn't exist", 404));
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: Company,
+  });
+});
 
 exports.aliasTopFiveCompanies = (req, res, next) => {
   req.query.sort = "-rating";
@@ -71,7 +65,7 @@ exports.aliasTopFiveCompanies = (req, res, next) => {
   next();
 };
 
-exports.getAllCompanies = async (req, res) => {
+exports.getAllCompanies = catchAsync(async (req, res, next) => {
   let queryObj = { ...req.query };
 
   let queryString = JSON.stringify(queryObj);
@@ -91,107 +85,74 @@ exports.getAllCompanies = async (req, res) => {
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
-  company
+  const companies = await company
     .find(queryObj)
     .select(
       "profileImg name rating numberOfReviews field city createdAt fullname"
     )
     .sort(querySort)
     .skip(skip)
-    .limit(limit)
-    .then((companies) => {
-      res.status(200).json({
-        status: "success",
-        results: companies.length,
-        data: companies,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+    .limit(limit);
 
-exports.getCompanyById = (req, res) => {
-  company
-    .findById(req.params.id)
-    .then((company) => {
-      return res.status(200).json({
-        status: "success",
-        data: company,
-      });
-    })
-    .catch((err) => {
-      return res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+  res.status(200).json({
+    status: "success",
+    results: companies.length,
+    data: companies,
+  });
+});
 
-exports.deleteCompanyById = (req, res) => {
-  company
-    .findByIdAndDelete(req.params.id)
-    .then(() => {
-      res.status(200).json({
-        status: "success",
-        data: null,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
+exports.getCompanyById = catchAsync(async (req, res, next) => {
+  const Company = await company.findById(req.params.id);
 
-exports.getAllReviews = (req, res) => {
-  company
-    .findById(req.params.id)
-    .then((company) => {
-      res.status(200).json({
-        status: "success",
-        data: company === null ? [] : company.reviews,
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({
-        status: "failed",
-        message: err.message,
-      });
-    });
-};
-
-exports.postReview = async (req, res) => {
-  try {
-    const companyUser = await company.findById(req.params.id);
-
-    if (!companyUser) {
-      throw new Error("this user doesn't exist");
-    }
-
-    companyUser.reviews.push(req.body.review);
-    companyUser.numberOfReviews = companyUser.numberOfReviews + 1;
-    companyUser.totalRating = companyUser.totalRating + req.body.review.rating;
-
-    companyUser.rating = companyUser.totalRating / companyUser.numberOfReviews;
-
-    await companyUser.save({ runValidators: true });
-
-    res.status(200).json({
-      status: "success",
-      data: companyUser,
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "failed",
-      message: err.message,
-    });
+  if (!Company) {
+    return next(new AppError("this user doesn't exist", 404));
   }
-};
+
+  res.status(200).json({
+    status: "success",
+    data: Company,
+  });
+});
+
+exports.deleteCompanyById = catchAsync(async (req, res, next) => {
+  await company.findByIdAndDelete(req.params.id);
+
+  res.status(200).json({
+    status: "success",
+    data: null,
+  });
+});
+
+exports.getAllReviews = catchAsync((req, res, next) => {
+  const Company = company
+    .findById(req.params.id)
+    .res.status(200)
+    .json({
+      status: "success",
+      data: Company === null ? [] : Company.reviews,
+    });
+});
+
+exports.postReview = catchAsync(async (req, res, next) => {
+  const companyUser = await company.findById(req.params.id);
+
+  if (!companyUser) {
+    return new AppError("this user doesn't exist");
+  }
+
+  companyUser.reviews.push(req.body.review);
+  companyUser.numberOfReviews = companyUser.numberOfReviews + 1;
+  companyUser.totalRating = companyUser.totalRating + req.body.review.rating;
+
+  companyUser.rating = companyUser.totalRating / companyUser.numberOfReviews;
+
+  await companyUser.save({ runValidators: true });
+
+  res.status(200).json({
+    status: "success",
+    data: companyUser,
+  });
+});
 
 exports.excludeUnaouthorizedFields = (req, res, next) => {
   req.body = excludeFromObject(

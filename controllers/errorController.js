@@ -31,11 +31,11 @@ const sendProdError = (err, res) => {
 module.exports = (err, req, res, next) => {
   err.statusCode = !err.statusCode ? 500 : err.statusCode;
   err.status = !err.status ? "error" : err.status;
-  let error = { ...err };
 
   if (process.env.NODE_ENV === "development") {
-    return sendDevError(error, res);
+    return sendDevError(err, res);
   }
 
-  sendProdError(error, res);
+  //error = handleCastError(err);
+  sendProdError(err, res);
 };
