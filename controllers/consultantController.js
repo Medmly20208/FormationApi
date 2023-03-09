@@ -108,7 +108,7 @@ exports.getAllConsultants = catchAsync(async (req, res, next) => {
 
   const consultants = await consultant
     .find(queryObj)
-    .select("profileImg name rating city field createdAt")
+    .select("profileImg name rating city field consultantId createdAt")
     .sort(querySort)
     .skip(skip)
     .limit(limit);
@@ -156,6 +156,7 @@ exports.getAllReviews = catchAsync(async (req, res) => {
 
 exports.postReview = catchAsync(async (req, res, next) => {
   const consultantUser = await consultant.findById(req.params.id);
+  console.log(consultantUser);
   if (!consultantUser) {
     return next(new AppError("this user doesn't exist", 404));
   }

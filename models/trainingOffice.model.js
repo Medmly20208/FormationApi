@@ -8,10 +8,10 @@ const trainingOffice = mongoose.Schema(
       type: String,
       required: true,
     },
-    trainingOfficeId: {
+    /*trainingOfficeId: {
       type: String,
       required: true,
-    },
+    },*/
     name: {
       type: String,
       trim: true,

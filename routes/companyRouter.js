@@ -24,6 +24,7 @@ Router.patch(
   companyController.upload,
   companyController.excludeUnaouthorizedFields,
   authController.checkIfUserAuthenticated,
+  authController.checkIfUserAuthorized,
   companyController.updateCompany
 );
 

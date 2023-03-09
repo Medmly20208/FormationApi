@@ -21,6 +21,9 @@ Router.patch(
   "/:id",
   trainingOfficeControllers.upload,
   trainingOfficeControllers.excludeUnaouthorizedFields,
+  authController.checkIfUserAuthenticated,
+
+  authController.checkIfUserAuthorized,
   trainingOfficeControllers.updateTrainingOffice
 );
 Router.delete("/:id", trainingOfficeControllers.deleteTrainingOfficeById);

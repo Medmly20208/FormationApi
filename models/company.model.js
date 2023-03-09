@@ -7,10 +7,10 @@ const company = mongoose.Schema(
       type: String,
       required: true,
     },
-    companyId: {
+    /* companyId: {
       type: String,
       required: true,
-    },
+    },*/
     name: {
       type: String,
       trim: true,

@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const sendEmail = require("../utils/email");
 const isPasswordValid = require("../helpers/isPasswordValid");
 const createToken = require("../utils/createToken");
+const AppError = require("../utils/AppError");
 
 const isUserAuthenticated = async (req) => {
   // check if the authorization token exists in the right form
@@ -213,4 +214,16 @@ exports.updatePassword = async function (req, res, next) {
     token,
     message: "you changed your password successfully",
   });
+};
+
+exports.checkIfUserAuthorized = (req, res, next) => {
+  const payload = JSON.parse(atob(req.headers.authorization.split(".")[1]));
+
+  if (payload._id !== req.params.id) {
+    return next(
+      new AppError("you are not authorized to access this route", 400)
+    );
+  }
+
+  next();
 };

@@ -70,7 +70,7 @@ exports.getAllTrainingOffices = catchAsync(async (req, res, next) => {
 
   const trainingOffices = await trainingOffice
     .find(queryObj)
-    .select("profileImg name rating numberOfReviews city")
+    .select("profileImg name rating numberOfReviews city createdAt")
     .sort(querySort)
     .skip(skip)
     .limit(limit);

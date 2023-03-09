@@ -9,7 +9,7 @@ const isPasswordValid = require("../helpers/isPasswordValid");
 const CreateTypeUser = async (id, email, type) => {
   if (type === "consultant") {
     return Consultant.create({
-      consultantId: id,
+      _id: id,
       email,
       active: true,
     }).catch((error) => {
@@ -19,7 +19,7 @@ const CreateTypeUser = async (id, email, type) => {
   if (type === "trainingOffice") {
     return trainingOffice
       .create({
-        trainingOfficeId: id,
+        _id: id,
         email,
         active: true,
       })
@@ -31,9 +31,9 @@ const CreateTypeUser = async (id, email, type) => {
   if (type === "company") {
     return company
       .create({
-        companyId: id,
         email,
         active: true,
+        _id: id,
       })
       .catch((error) => {
         throw Error(error.message);

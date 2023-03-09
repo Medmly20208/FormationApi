@@ -19,6 +19,8 @@ Router.delete("/:id", consultantController.deleteConsultantById);
 
 Router.patch(
   "/:id",
+  authController.checkIfUserAuthenticated,
+  authController.checkIfUserAuthorized,
   consultantController.uploadFiles,
   consultantController.excludeUnaouthorizedFields,
   consultantController.updateConsultant
