@@ -115,6 +115,7 @@ exports.getAllConsultants = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
+    results: consultants.length,
     data: consultants,
   });
 });

@@ -22,7 +22,6 @@ Router.patch(
   trainingOfficeControllers.upload,
   trainingOfficeControllers.excludeUnaouthorizedFields,
   authController.checkIfUserAuthenticated,
-
   authController.checkIfUserAuthorized,
   trainingOfficeControllers.updateTrainingOffice
 );

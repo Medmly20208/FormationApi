@@ -4,7 +4,8 @@
   "description": "\"# FormationApi\"",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon start",
+    "start": "node start",
+    "dev":"nodemon start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:prod": "set NODE_ENV=production &&  nodemon start"
    
