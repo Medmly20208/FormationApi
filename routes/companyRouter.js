@@ -42,4 +42,12 @@ Router.post(
   companyController.postReview
 );
 
+//get notifications
+Router.get(
+  "/:id/notifications",
+  authController.checkIfUserAuthenticated,
+  authController.checkIfUserAuthorized,
+  companyController.getNotifications
+);
+
 module.exports = Router;

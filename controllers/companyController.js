@@ -136,11 +136,48 @@ exports.postReview = catchAsync(async (req, res, next) => {
 
   companyUser.rating = companyUser.totalRating / companyUser.numberOfReviews;
 
+  companyUser.notifications.push({
+    senderId: req.body.review.reviewerId,
+    senderType: req.body.review.reviewerType,
+    notificationType: "review",
+    comment: `reviewed your profile with ${req.body.review.rating}`,
+  });
+
   await companyUser.save({ runValidators: true });
 
   res.status(200).json({
     status: "success",
     data: companyUser,
+  });
+});
+
+exports.postNotification = catchAsync(async (req, res, next) => {
+  const companyUser = await company.findById(req.params.id);
+
+  if (!companyUser) {
+    return new AppError("this user doesn't exist");
+  }
+
+  companyUser.notifications.push(req.body.notification);
+
+  await companyUser.save({ runValidators: true });
+
+  res.status(200).json({
+    status: "success",
+    data: companyUser,
+  });
+});
+
+exports.getNotifications = catchAsync(async (req, res, next) => {
+  const companyUser = await company.findById(req.params.id);
+
+  if (!companyUser) {
+    return new AppError("this user doesn't exist");
+  }
+
+  res.status(200).json({
+    status: "success",
+    data: companyUser.notifications,
   });
 });
 

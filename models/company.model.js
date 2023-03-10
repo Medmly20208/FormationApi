@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Reviews = require("../schemas/review");
+const Notifications = require("../schemas/notifications");
 
 const company = mongoose.Schema(
   {
@@ -53,6 +54,9 @@ const company = mongoose.Schema(
     reviews: {
       type: [Reviews],
       default: [],
+    },
+    notifications: {
+      type: [Notifications],
     },
   },
 

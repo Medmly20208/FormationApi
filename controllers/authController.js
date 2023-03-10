@@ -14,13 +14,13 @@ const isUserAuthenticated = async (req) => {
     !req.headers.authorization.startsWith("Bearer") ||
     !req.headers.authorization.split(" ")[1]
   ) {
-    throw new Error("you are not authorized to access this route.");
+    throw new Error("you are not authenticated");
   }
   const token = req.headers.authorization.split(" ")[1];
 
   //  validate json
   if (!token) {
-    throw new Error("you are not authorized to access this route");
+    throw new Error("you are not authenticated");
   }
 
   const decoded = await jwt.verify(
@@ -28,7 +28,7 @@ const isUserAuthenticated = async (req) => {
     process.env.SECRET_JWT,
     (err, result) => {
       if (err) {
-        throw new Error("you are not authorized");
+        throw new Error("you are not authorized to access this route");
       }
       return result;
     }
